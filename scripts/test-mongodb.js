@@ -19,13 +19,13 @@ async function testConnection() {
       console.log(`  - ${col.name}`);
     });
     
-    // ตรวจสอบ registrations collection
-    const Registration = mongoose.connection.collection('registrations');
-    const count = await Registration.countDocuments();
-    console.log(`\n📊 Total registrations: ${count}`);
+    // ตรวจสอบ studentmanagement collection (collection ที่ใช้จริงตาม model Registration)
+    const StudentManagement = mongoose.connection.collection('studentmanagement');
+    const count = await StudentManagement.countDocuments();
+    console.log(`\n📊 Total registrations (studentmanagement): ${count}`);
     
     if (count > 0) {
-      const sample = await Registration.findOne();
+      const sample = await StudentManagement.findOne();
       console.log('\n📝 Sample registration:');
       console.log(JSON.stringify(sample, null, 2));
     }

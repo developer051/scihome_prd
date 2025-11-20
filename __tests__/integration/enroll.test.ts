@@ -19,9 +19,25 @@ describe('Integration | POST /api/enroll', () => {
     });
 
   beforeAll(async () => {
+    // เคลียร์ connection cache และปิด connection เก่าก่อน
+    if (global.mongoose) {
+      global.mongoose = { conn: null, promise: null };
+    }
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
+    
     mongoServer = await MongoMemoryServer.create();
     process.env.MONGODB_URI = mongoServer.getUri();
     await connectDB();
+  });
+
+  beforeEach(async () => {
+    await Promise.all([
+      Registration.deleteMany({}),
+      Course.deleteMany({}),
+      Enrollment.deleteMany({}),
+    ]);
   });
 
   afterEach(async () => {
