@@ -1,0 +1,242 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { FaSearch, FaFilter } from 'react-icons/fa';
+import CourseCard from '@/components/CourseCard';
+
+interface Course {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  level: string;
+  price: number;
+  schedule: string;
+  image: string;
+  duration: string;
+  maxStudents: number;
+  isOnline: boolean;
+  isOnsite: boolean;
+}
+
+export default function CoursesPage() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState('');
+
+  const categories = [
+    'คณิตศาสตร์',
+    'ภาษาอังกฤษ',
+    'ฟิสิกส์',
+    'เคมี',
+    'ชีววิทยา',
+    'สังคมศึกษา',
+    'ภาษาไทย',
+  ];
+
+  const levels = [
+    'ม.1',
+    'ม.2',
+    'ม.3',
+    'ม.4',
+    'ม.5',
+    'ม.6',
+    'เตรียมสอบเข้า',
+  ];
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/api/courses');
+        const data = await response.json();
+        setCourses(data);
+        setFilteredCourses(data);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    let filtered = courses;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (course) =>
+          course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter((course) => course.category === selectedCategory);
+    }
+
+    if (selectedLevel) {
+      filtered = filtered.filter((course) => course.level === selectedLevel);
+    }
+
+    setFilteredCourses(filtered);
+  }, [courses, searchTerm, selectedCategory, selectedLevel]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">หลักสูตรทั้งหมด</h1>
+          <p className="text-xl text-gray-600">
+            เลือกหลักสูตรที่เหมาะสมกับความต้องการของคุณ
+          </p>
+        </div>
+
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-gray-600">
+            พบ {filteredCourses.length} หลักสูตร
+            {(searchTerm || selectedCategory || selectedLevel) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
+          </p>
+        </div>
+
+        {/* Main Content: Filters Sidebar + Courses Grid */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filters Sidebar */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <FaFilter className="text-blue-600" />
+                ตัวกรอง
+              </h2>
+
+              <div className="space-y-6">
+                {/* Search */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ค้นหา
+                  </label>
+                  <div className="relative">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="ค้นหาหลักสูตร..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    หมวดหมู่
+                  </label>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setSelectedCategory('')}
+                      className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                        selectedCategory === ''
+                          ? 'bg-blue-100 text-blue-700 font-medium'
+                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      ทุกหมวดหมู่
+                    </button>
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                          selectedCategory === category
+                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Level Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ระดับชั้น
+                  </label>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">ทุกระดับชั้น</option>
+                    {levels.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clear Filters */}
+                {(searchTerm || selectedCategory || selectedLevel) && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('');
+                      setSelectedLevel('');
+                    }}
+                    className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
+                  >
+                    ล้างตัวกรอง
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Courses Grid */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="bg-gray-200 animate-pulse rounded-lg h-80"></div>
+                ))}
+              </div>
+            ) : filteredCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredCourses.map((course) => (
+                  <CourseCard key={course._id} course={course} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <FaFilter className="mx-auto text-gray-400 text-6xl mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">ไม่พบหลักสูตร</h3>
+                <p className="text-gray-600 mb-4">
+                  ลองเปลี่ยนคำค้นหาหรือตัวกรองดูครับ
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('');
+                    setSelectedLevel('');
+                  }}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  ล้างตัวกรอง
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

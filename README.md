@@ -1,36 +1,264 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SciHome - เว็บไซต์สถาบันกวดวิชา
 
-## Getting Started
+เว็บไซต์สถาบันกวดวิชาที่สร้างด้วย Next.js 14, TypeScript, Tailwind CSS และ MongoDB พร้อมระบบ Admin Panel สำหรับจัดการข้อมูล
 
-First, run the development server:
+## ✨ ฟีเจอร์หลัก
 
+### หน้าสาธารณะ
+- **หน้าหลัก** - แสดงข้อมูลสถาบัน, หลักสูตรยอดนิยม, รีวิว และข่าวสาร
+- **หลักสูตร** - ระบบค้นหาและกรองหลักสูตร พร้อมหน้ารายละเอียดและฟอร์มสมัครเรียน
+- **ครูผู้สอน** - แสดงข้อมูลครูผู้สอน พร้อมระบบค้นหาและกรอง
+- **เกี่ยวกับเรา** - ข้อมูลสถาบัน, วิสัยทัศน์, พันธกิจ และสถิติ
+- **ติดต่อเรา** - ข้อมูลติดต่อ, แผนที่ และฟอร์มติดต่อ
+
+### ระบบ Admin Panel
+- **Dashboard** - สรุปสถิติและข้อมูลสำคัญ
+- **จัดการหลักสูตร** - เพิ่ม, แก้ไข, ลบหลักสูตร
+- **จัดการครูผู้สอน** - เพิ่ม, แก้ไข, ลบข้อมูลครู
+- **จัดการข่าวสาร** - เพิ่ม, แก้ไข, ลบข่าวสาร
+- **จัดการรีวิว** - อนุมัติและจัดการรีวิวจากนักเรียน
+- **ดูการสมัครเรียน** - ดูรายการสมัครเรียนทั้งหมด
+- **ดูข้อความติดต่อ** - ดูข้อความติดต่อจากผู้เยี่ยมชม
+
+## 🛠️ เทคโนโลยีที่ใช้
+
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose
+- **UI Components**: React Icons, Custom Components
+- **Styling**: Tailwind CSS with Custom Design System
+
+## 📋 ความต้องการของระบบ
+
+- Node.js 18.0 หรือใหม่กว่า
+- MongoDB 4.4 หรือใหม่กว่า
+- npm หรือ yarn
+
+## 🚀 การติดตั้ง
+
+### 1. Clone Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd scihome
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. ติดตั้ง Dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. ตั้งค่า Environment Variables
+สร้างไฟล์ `.env.local` ในโฟลเดอร์ root:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+MONGODB_URI=mongodb://localhost:27017/scihome
+NEXTAUTH_SECRET=your-secret-key-here
+NEXTAUTH_URL=http://localhost:3000
+```
 
-## Learn More
+### 4. ตั้งค่า MongoDB
+- ติดตั้ง MongoDB บนเครื่องของคุณ
+- หรือใช้ MongoDB Atlas (cloud database)
+- อัปเดต `MONGODB_URI` ในไฟล์ `.env.local`
 
-To learn more about Next.js, take a look at the following resources:
+### 5. เพิ่มข้อมูลตัวอย่าง (Optional)
+```bash
+npm run seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 6. รันโปรเจกต์
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+เว็บไซต์จะเปิดที่ [http://localhost:3000](http://localhost:3000)
 
-## Deploy on Vercel
+## 📁 โครงสร้างโปรเจกต์
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+scihome/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── admin/             # Admin Panel Pages
+│   ├── courses/           # Course Pages
+│   ├── teachers/          # Teacher Pages
+│   ├── about/             # About Page
+│   ├── contact/           # Contact Page
+│   ├── globals.css        # Global Styles
+│   ├── layout.tsx         # Root Layout
+│   └── page.tsx           # Homepage
+├── components/            # Reusable Components
+│   ├── AdminLayout.tsx    # Admin Panel Layout
+│   ├── CourseCard.tsx     # Course Card Component
+│   ├── DataTable.tsx      # Data Table Component
+│   ├── Footer.tsx         # Footer Component
+│   ├── Navbar.tsx         # Navigation Component
+│   ├── RegistrationForm.tsx # Registration Form
+│   ├── TeacherCard.tsx    # Teacher Card Component
+│   ├── TestimonialCard.tsx # Testimonial Card
+│   └── ContactForm.tsx    # Contact Form
+├── lib/                   # Utility Functions
+│   └── mongodb.ts         # MongoDB Connection
+├── models/                # Mongoose Models
+│   ├── Course.ts          # Course Model
+│   ├── Teacher.ts         # Teacher Model
+│   ├── News.ts            # News Model
+│   ├── Testimonial.ts     # Testimonial Model
+│   ├── Registration.ts    # Registration Model
+│   └── ContactMessage.ts  # Contact Message Model
+├── scripts/               # Utility Scripts
+│   └── seed.js            # Database Seeding Script
+├── types/                 # TypeScript Types
+│   └── global.d.ts        # Global Type Definitions
+├── public/                # Static Assets
+├── tailwind.config.ts     # Tailwind Configuration
+├── next.config.js         # Next.js Configuration
+└── package.json           # Dependencies
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🗄️ Database Schema
+
+### Course (หลักสูตร)
+- name: ชื่อหลักสูตร
+- description: รายละเอียด
+- category: หมวดหมู่ (คณิตศาสตร์, ภาษาอังกฤษ, ฯลฯ)
+- level: ระดับชั้น (ม.1-6, เตรียมสอบเข้า)
+- price: ราคา
+- schedule: ตารางเรียน
+- image: รูปภาพ
+- duration: ระยะเวลาเรียน
+- maxStudents: จำนวนนักเรียนสูงสุด
+- isOnline: รูปแบบออนไลน์
+- isOnsite: รูปแบบออนไซต์
+
+### Teacher (ครูผู้สอน)
+- name: ชื่อ
+- image: รูปภาพ
+- education: วุฒิการศึกษา
+- expertise: ความเชี่ยวชาญ
+- experience: ประสบการณ์ (ปี)
+- achievements: ผลงานเด่น
+- bio: ประวัติ
+- subjects: วิชาที่สอน
+
+### News (ข่าวสาร)
+- title: หัวข้อ
+- content: เนื้อหา
+- image: รูปภาพ
+- author: ผู้เขียน
+- isPublished: สถานะเผยแพร่
+- publishedAt: วันที่เผยแพร่
+
+### Testimonial (รีวิว)
+- studentName: ชื่อนักเรียน
+- message: ข้อความรีวิว
+- image: รูปภาพ
+- course: หลักสูตร
+- rating: คะแนน (1-5)
+- isApproved: สถานะอนุมัติ
+
+### Registration (การสมัครเรียน)
+- name: ชื่อ-นามสกุล
+- phone: เบอร์โทรศัพท์
+- email: อีเมล
+- course: หลักสูตร
+- message: ข้อความเพิ่มเติม
+- status: สถานะ (pending, confirmed, cancelled)
+
+### ContactMessage (ข้อความติดต่อ)
+- name: ชื่อ-นามสกุล
+- phone: เบอร์โทรศัพท์
+- email: อีเมล
+- message: ข้อความ
+- isRead: สถานะอ่าน
+
+## 🎨 การปรับแต่ง
+
+### สี
+แก้ไขสีใน `tailwind.config.ts`:
+```typescript
+colors: {
+  primary: {
+    // เปลี่ยนสีหลัก
+  }
+}
+```
+
+### ฟอนต์
+แก้ไขฟอนต์ใน `tailwind.config.ts`:
+```typescript
+fontFamily: {
+  sans: ['Your-Font', 'system-ui', 'sans-serif'],
+}
+```
+
+### เนื้อหา
+- แก้ไขข้อมูลสถาบันใน `app/about/page.tsx`
+- แก้ไขข้อมูลติดต่อใน `app/contact/page.tsx`
+- แก้ไขข้อมูล Footer ใน `components/Footer.tsx`
+
+## 📱 Responsive Design
+
+เว็บไซต์รองรับการแสดงผลบน:
+- Desktop (1024px+)
+- Tablet (768px - 1023px)
+- Mobile (320px - 767px)
+
+## 🔧 การพัฒนา
+
+### รันในโหมด Development
+```bash
+npm run dev
+```
+
+### Build สำหรับ Production
+```bash
+npm run build
+npm start
+```
+
+### Linting
+```bash
+npm run lint
+```
+
+### เพิ่มข้อมูลตัวอย่าง
+```bash
+npm run seed
+```
+
+## 🚀 การ Deploy
+
+### Vercel (แนะนำ)
+1. Push โค้ดไปยัง GitHub
+2. เชื่อมต่อกับ Vercel
+3. ตั้งค่า Environment Variables
+4. Deploy
+
+### Netlify
+1. Build โปรเจกต์
+2. Upload ไฟล์ build
+3. ตั้งค่า Environment Variables
+
+### VPS/Server
+1. Build โปรเจกต์
+2. Upload ไฟล์ไปยัง server
+3. ติดตั้ง Node.js และ MongoDB
+4. รัน `npm start`
+
+## 📞 การสนับสนุน
+
+หากมีปัญหาหรือคำถาม:
+- สร้าง Issue ใน GitHub Repository
+- ติดต่อทีมพัฒนา
+
+## 📄 License
+
+MIT License - ดูรายละเอียดในไฟล์ LICENSE
+
+## 🙏 ขอบคุณ
+
+- Next.js Team สำหรับ Framework ที่ยอดเยี่ยม
+- Tailwind CSS Team สำหรับ CSS Framework
+- MongoDB Team สำหรับ Database
+- React Icons สำหรับ Icon Library

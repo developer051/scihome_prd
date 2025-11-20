@@ -1,0 +1,19 @@
+{
+  "createdAt": "2025-11-17T15:36:37.550Z",
+  "database": "scihome",
+  "uriHost": "localhost:27017",
+  "collectionCount": 11,
+  "collections": [
+    "registrations",
+    "studentmanagement",
+    "images",
+    "examResults",
+    "testimonials",
+    "contactmessages",
+    "teachers",
+    "enrollments",
+    "news",
+    "exams",
+    "courses"
+  ]
+}

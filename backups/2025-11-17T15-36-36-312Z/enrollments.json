@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "69133d4c68da32e7bc3d3e7f",
+    "studentId": "69107647166aed143555f9b2",
+    "courseId": "690f0dbbc8fa721b415f5f41",
+    "status": "pending",
+    "enrolledAt": "2025-11-11T13:42:36.054Z",
+    "enrollmentDate": null,
+    "notes": "",
+    "createdAt": "2025-11-11T13:42:36.063Z",
+    "updatedAt": "2025-11-11T13:42:36.063Z",
+    "__v": 0
+  },
+  {
+    "_id": "69133d6568da32e7bc3d3ea3",
+    "studentId": "69107647166aed143555f9b2",
+    "courseId": "690f0dbbc8fa721b415f5f3f",
+    "status": "pending",
+    "enrolledAt": "2025-11-11T13:43:01.538Z",
+    "enrollmentDate": null,
+    "notes": "",
+    "createdAt": "2025-11-11T13:43:01.542Z",
+    "updatedAt": "2025-11-11T13:43:01.542Z",
+    "__v": 0
+  },
+  {
+    "_id": "6913470d26d763cecbf0098f",
+    "studentId": "69107647166aed143555f9b2",
+    "courseId": "690f0dbbc8fa721b415f5f48",
+    "status": "pending",
+    "enrolledAt": "2025-11-11T14:24:13.436Z",
+    "enrollmentDate": null,
+    "notes": "",
+    "createdAt": "2025-11-11T14:24:13.445Z",
+    "updatedAt": "2025-11-11T14:24:13.445Z",
+    "__v": 0
+  },
+  {
+    "_id": "691361fc26d763cecbf00c75",
+    "studentId": "69107647166aed143555f9b2",
+    "courseId": "690f0dbbc8fa721b415f5f46",
+    "status": "confirmed",
+    "enrolledAt": "2025-11-11T16:19:08.744Z",
+    "enrollmentDate": null,
+    "notes": "",
+    "createdAt": "2025-11-11T16:19:08.748Z",
+    "updatedAt": "2025-11-11T16:20:02.669Z",
+    "__v": 0
+  }
+]
