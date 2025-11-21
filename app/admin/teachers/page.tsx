@@ -286,12 +286,12 @@ function TeacherForm({ teacher, onSubmit, onClose }: {
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) {
@@ -300,10 +300,10 @@ function TeacherForm({ teacher, onSubmit, onClose }: {
       }
 
       const data = await response.json();
-      setFormData({
-        ...formData,
+      setFormData((prevFormData) => ({
+        ...prevFormData,
         image: data.url,
-      });
+      }));
       setImagePreview(data.url);
       
       // Reset file input

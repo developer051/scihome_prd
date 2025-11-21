@@ -25,10 +25,10 @@ async function connectDB() {
 
     console.log('Connecting to MongoDB:', MONGODB_URI.replace(/\/\/.*@/, '//***@')); // Hide credentials in log
     
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
       console.log('MongoDB connected successfully');
-      return mongoose;
-    });
+      return mongooseInstance;
+    }) as any;
   }
 
   try {

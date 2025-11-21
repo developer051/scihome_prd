@@ -25,6 +25,12 @@ interface Course {
   createdAt: string;
 }
 
+type Column<T = Course> = {
+  key: keyof T;
+  label: string;
+  render?: (value: any) => React.ReactNode;
+};
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +47,7 @@ export default function AdminCoursesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const columns = [
+  const columns: Column<Course>[] = [
     {
       key: 'name',
       label: 'ชื่อหลักสูตร',
@@ -449,11 +455,18 @@ export default function AdminCoursesPage() {
                             {isExpanded ? <FaChevronUp size={16} /> : <FaChevronDown size={16} />}
                           </button>
                         </td>
-                        {columns.map((column) => (
-                          <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {column.render ? column.render(course[column.key as keyof Course], course) : course[column.key as keyof Course]}
-                          </td>
-                        ))}
+                        {columns.map((column) => {
+                          const value = course[column.key as keyof Course];
+                          return (
+                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {column.render 
+                                ? column.render(value) 
+                                : Array.isArray(value) 
+                                  ? `${value.length} รายการ` 
+                                  : value}
+                            </td>
+                          );
+                        })}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button

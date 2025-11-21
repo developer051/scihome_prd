@@ -97,7 +97,7 @@ export async function PUT(
     }
     
     if (enrollmentDate !== undefined) {
-      enrollment.enrollmentDate = enrollmentDate ? new Date(enrollmentDate) : null;
+      enrollment.enrollmentDate = enrollmentDate ? new Date(enrollmentDate) : undefined;
     }
     
     if (notes !== undefined) {

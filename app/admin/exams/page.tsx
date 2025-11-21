@@ -318,7 +318,11 @@ function ExamForm({ exam, courses, onSubmit, onClose }: {
 }) {
   const [formData, setFormData] = useState({
     title: exam?.title || '',
-    courseId: exam?.courseId?._id || exam?.courseId || '',
+    courseId: typeof exam?.courseId === 'object' && exam?.courseId?._id 
+      ? exam.courseId._id 
+      : typeof exam?.courseId === 'string' 
+        ? exam.courseId 
+        : '',
     description: exam?.description || '',
     duration: exam?.duration || 60,
     passingScore: exam?.passingScore || '',

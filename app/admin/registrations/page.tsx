@@ -362,11 +362,9 @@ function RegistrationEditForm({ registration, courses, onSubmit, onClose }: {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // ถ้าไม่มีการเปลี่ยน password ให้ไม่ส่ง password ไป
-    const submitData = { ...formData };
-    if (!submitData.password) {
-      delete submitData.password;
-    }
-    onSubmit(submitData);
+    const { password, ...submitData } = formData;
+    const finalData = password ? { ...submitData, password } : submitData;
+    onSubmit(finalData);
   };
 
   return (

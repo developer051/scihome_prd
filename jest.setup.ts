@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'test';
+(process.env as any).NODE_ENV = 'test';
 
 // เคลียร์ mongoose connection cache เพื่อป้องกันการเชื่อมต่อกับ database จริงระหว่าง test
 import mongoose from 'mongoose';
