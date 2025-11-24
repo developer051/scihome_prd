@@ -43,6 +43,17 @@ export default function Navbar() {
     { name: 'ติดต่อเรา', href: '/contact' },
   ];
 
+  const buttonBase =
+    'relative inline-flex items-center justify-center rounded-2xl px-5 py-2.5 text-sm font-semibold text-white/95 tracking-wide shadow-lg shadow-black/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white active:scale-[0.98] backdrop-blur-xl border border-white/30';
+
+  const buttonVariants = {
+    dashboard: `${buttonBase} bg-gradient-to-r from-violet-500/80 via-purple-500/70 to-fuchsia-500/70 hover:from-violet-500/95 hover:via-purple-500/90 hover:to-fuchsia-500/90 focus:ring-purple-200 text-white`,
+    logout: `${buttonBase} bg-gradient-to-r from-rose-500/75 via-red-500/70 to-orange-500/70 hover:from-rose-500/95 hover:via-red-500/90 hover:to-orange-500/90 focus:ring-rose-200 text-white`,
+    login: `${buttonBase} bg-gradient-to-r from-blue-500/75 via-sky-500/70 to-cyan-500/70 hover:from-blue-500/95 hover:via-sky-500/90 hover:to-cyan-500/90 focus:ring-blue-200 text-white`,
+    register: `${buttonBase} bg-gradient-to-r from-emerald-500/75 via-green-500/70 to-lime-500/70 hover:from-emerald-500/95 hover:via-green-500/90 hover:to-lime-500/90 focus:ring-emerald-200 text-white`,
+    admin: `${buttonBase} bg-gradient-to-r from-slate-700/80 via-slate-800/70 to-gray-900/70 hover:from-slate-700/95 hover:via-gray-900/90 hover:to-black/90 focus:ring-slate-200 text-white`,
+  };
+
   return (
     <nav className="bg-white/98 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-200/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
@@ -127,17 +138,17 @@ export default function Navbar() {
               <>
                 <Link
                   href="/dashboard"
-                  className={`ml-3 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`ml-3 ${buttonVariants.dashboard} ${
                     pathname === '/dashboard'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
+                      ? 'shadow-purple-500/40'
+                      : 'shadow-purple-500/20'
                   }`}
                 >
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="ml-3 bg-red-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700 active:bg-red-800 transition-all duration-200"
+                  className={`ml-3 ${buttonVariants.logout} shadow-rose-500/20`}
                 >
                   ออกจากระบบ
                 </button>
@@ -145,7 +156,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="ml-3 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-all duration-200"
+                className={`ml-3 ${buttonVariants.login} shadow-sky-500/20`}
               >
                 Login
               </Link>
@@ -153,14 +164,14 @@ export default function Navbar() {
 
             <Link
               href="/register"
-              className="ml-3 bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 active:bg-green-800 transition-all duration-200"
+              className={`ml-3 ${buttonVariants.register} shadow-emerald-500/20`}
             >
               Register
             </Link>
 
             <Link
               href="/admin"
-              className="ml-3 bg-gray-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 active:bg-gray-900 transition-all duration-200"
+              className={`ml-3 ${buttonVariants.admin} shadow-slate-800/30`}
             >
               Admin
             </Link>
@@ -250,10 +261,10 @@ export default function Navbar() {
               <>
                 <Link
                   href="/dashboard"
-                  className={`block mt-3 mx-2 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 text-center ${
+                  className={`block mt-3 mx-2 text-base ${buttonVariants.dashboard} ${
                     pathname === '/dashboard'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
+                      ? 'shadow-purple-500/40'
+                      : 'shadow-purple-500/20'
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
@@ -264,7 +275,7 @@ export default function Navbar() {
                     setIsOpen(false);
                     handleLogout();
                   }}
-                  className="w-full mt-3 mx-2 bg-red-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-red-700 active:bg-red-800 transition-all duration-200 text-center"
+                  className={`w-full mt-3 mx-2 text-base ${buttonVariants.logout} shadow-rose-500/20`}
                 >
                   ออกจากระบบ
                 </button>
@@ -272,7 +283,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="block mt-3 mx-2 bg-blue-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 text-center"
+                className={`block mt-3 mx-2 text-base ${buttonVariants.login} shadow-sky-500/20`}
                 onClick={() => setIsOpen(false)}
               >
                 Login
@@ -281,7 +292,7 @@ export default function Navbar() {
 
             <Link
               href="/register"
-              className="block mt-3 mx-2 bg-green-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-green-700 active:bg-green-800 transition-all duration-200 text-center"
+              className={`block mt-3 mx-2 text-base ${buttonVariants.register} shadow-emerald-500/20`}
               onClick={() => setIsOpen(false)}
             >
               Register
@@ -289,7 +300,7 @@ export default function Navbar() {
 
             <Link
               href="/admin"
-              className="block mt-3 mx-2 bg-gray-700 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-gray-800 active:bg-gray-900 transition-all duration-200 text-center"
+              className={`block mt-3 mx-2 text-base ${buttonVariants.admin} shadow-slate-900/30`}
               onClick={() => setIsOpen(false)}
             >
               Admin

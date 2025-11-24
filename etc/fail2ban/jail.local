@@ -1,0 +1,16 @@
+[DEFAULT]
+# บล็อกไอพี 30 นาทีเมื่อผิดกฎ
+bantime = 30m
+# เวลาตรวจสอบความผิดพลาดสะสม
+findtime = 10m
+# ให้ผิดได้สูงสุด 3 ครั้ง
+maxretry = 3
+
+[sshd]
+enabled = true
+port = ssh
+logpath = %(sshd_log)s
+bantime = 30m
+findtime = 10m
+maxretry = 3
+
