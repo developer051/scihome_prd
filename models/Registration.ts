@@ -6,6 +6,7 @@ export interface IRegistration extends Document {
   email: string;
   username: string;
   password: string;
+  role: 'user' | 'admin';
   dateOfBirth: Date;
   gradeLevel: string;
   school: string;
@@ -63,6 +64,16 @@ const RegistrationSchema = new Schema<IRegistration>({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
     select: false, // ไม่ให้ส่ง password กลับมาโดยอัตโนมัติ
+  },
+  role: {
+    type: String,
+    enum: {
+      values: ['user', 'admin'],
+      message: 'Role must be either user or admin',
+    },
+    default: 'user',
+    lowercase: true,
+    trim: true,
   },
   dateOfBirth: {
     type: Date,

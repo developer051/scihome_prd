@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     console.log('Received registration data:', { ...body, password: '***' });
     
     // Validate required fields
-    const { name, phone, email, username, password, dateOfBirth, gradeLevel, school, photo, course, courseId, message } = body;
+    const { name, phone, email, username, password, dateOfBirth, gradeLevel, school, photo, course, courseId, message, role } = body;
     
     if (!name || !phone || !email || !username || !password || !dateOfBirth || !gradeLevel || !school || !course) {
       console.error('Missing required fields:', { name, phone, email, username, password: !!password, dateOfBirth, gradeLevel, school, course });
@@ -34,6 +34,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const allowedRoles = ['user', 'admin'] as const;
+    const normalizedRole =
+      typeof role === 'string' && allowedRoles.includes(role.toLowerCase() as (typeof allowedRoles)[number])
+        ? (role.toLowerCase() as (typeof allowedRoles)[number])
+        : 'user';
 
     // ตรวจสอบว่า username ซ้ำหรือไม่
     const existingUser = await Registration.findOne({ username: username.toLowerCase() });
@@ -57,6 +63,7 @@ export async function POST(request: NextRequest) {
       ...registrationDataWithoutConfirm,
       username: username.toLowerCase(),
       password: hashedPassword,
+      role: normalizedRole,
       dateOfBirth: new Date(dateOfBirth),
       courseId: courseId || '', // เพิ่ม courseId ถ้ามี
       message: message || '', // รับ message ถ้ามี

@@ -11,6 +11,7 @@ interface User {
   email: string;
   phone: string;
   username: string;
+  role?: 'user' | 'admin';
   dateOfBirth: string;
   gradeLevel: string;
   school: string;
@@ -324,6 +325,12 @@ export default function DashboardPage() {
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">สถานะ</label>
               {user?.status && getStatusBadge(user.status)}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">สิทธิ์การใช้งาน</label>
+              <p className="text-lg text-gray-900">
+                {user?.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้เรียน'}
+              </p>
             </div>
           </div>
         </div>

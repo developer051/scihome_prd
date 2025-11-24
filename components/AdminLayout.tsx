@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   FaTachometerAlt, 
   FaGraduationCap, 
@@ -16,7 +16,7 @@ import {
   FaClipboardList,
   FaUsers
 } from 'react-icons/fa';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,7 +24,40 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkAccess = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const userRaw = localStorage.getItem('user');
+
+      if (!isLoggedIn || !userRaw) {
+        router.replace('/login');
+        setAuthChecked(true);
+        return;
+      }
+
+      try {
+        const user = JSON.parse(userRaw);
+        if (user?.role === 'admin') {
+          setIsAuthorized(true);
+        } else {
+          router.replace('/dashboard');
+        }
+      } catch {
+        router.replace('/login');
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    checkAccess();
+  }, [router]);
 
   const menuItems = [
     { name: 'Dashboard', href: '/admin', icon: FaTachometerAlt },
@@ -38,6 +71,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'ผู้ใช้', href: '/admin/users', icon: FaUsers },
     { name: 'ข้อความติดต่อ', href: '/admin/messages', icon: FaEnvelope },
   ];
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600">กำลังตรวจสอบสิทธิ์ผู้ดูแลระบบ...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600">กำลังนำคุณไปยังหน้าที่เหมาะสม...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">

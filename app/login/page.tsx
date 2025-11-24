@@ -18,7 +18,14 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       if (isLoggedIn) {
-        router.push('/dashboard');
+        try {
+          const storedUser = localStorage.getItem('user');
+          const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+          const target = parsedUser?.role === 'admin' ? '/admin' : '/dashboard';
+          router.push(target);
+        } catch {
+          router.push('/dashboard');
+        }
       }
     }
   }, [router]);
@@ -55,13 +62,15 @@ export default function LoginPage() {
 
       // บันทึกข้อมูลผู้ใช้ใน localStorage
       if (typeof window !== 'undefined') {
+        const role = data.user?.role === 'admin' ? 'admin' : 'user';
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('user', JSON.stringify({ ...data.user, role }));
         localStorage.setItem('userId', data.user._id);
       }
 
-      // Redirect ไปยัง dashboard
-      router.push('/dashboard');
+      // Redirect ตามสิทธิ์
+      const destination = data.user?.role === 'admin' ? '/admin' : '/dashboard';
+      router.push(destination);
     } catch (error: any) {
       console.error('Login error:', error);
       setError('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');

@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
     }
     
     // สร้าง response โดยไม่รวม password
-    const { password: _, ...userResponse } = user.toObject();
+    const userObject = user.toObject();
+    userObject.role = userObject.role || 'user';
+    const { password: _, ...userResponse } = userObject;
     
     return NextResponse.json({
       message: 'เข้าสู่ระบบสำเร็จ',

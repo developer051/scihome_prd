@@ -16,7 +16,9 @@ export async function GET(
     }
     
     // ไม่ส่ง password กลับไป
-    const { password: _, ...registrationResponse } = registration.toObject();
+    const registrationObject = registration.toObject();
+    registrationObject.role = registrationObject.role || 'user';
+    const { password: _, ...registrationResponse } = registrationObject;
     
     return NextResponse.json(registrationResponse);
   } catch (error) {
@@ -58,6 +60,18 @@ export async function PUT(
       }
       updateData.username = body.username.toLowerCase();
     }
+
+    if (typeof body.role === 'string') {
+      const allowedRoles = ['user', 'admin'];
+      const normalizedRole = body.role.toLowerCase();
+      if (!allowedRoles.includes(normalizedRole)) {
+        return NextResponse.json(
+          { error: 'Role must be either user or admin' },
+          { status: 400 }
+        );
+      }
+      updateData.role = normalizedRole;
+    }
     
     const registration = await Registration.findByIdAndUpdate(
       params.id,
@@ -70,7 +84,9 @@ export async function PUT(
     }
     
     // ไม่ส่ง password กลับไป
-    const { password: _, ...registrationResponse } = registration.toObject();
+    const registrationObject = registration.toObject();
+    registrationObject.role = registrationObject.role || 'user';
+    const { password: _, ...registrationResponse } = registrationObject;
     
     return NextResponse.json(registrationResponse);
   } catch (error: any) {

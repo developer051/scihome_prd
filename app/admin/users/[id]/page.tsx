@@ -25,6 +25,7 @@ interface User {
   phone: string;
   email: string;
   username: string;
+  role?: 'user' | 'admin';
   dateOfBirth: string;
   gradeLevel: string;
   school: string;
@@ -345,6 +346,16 @@ export default function UserDetailPage() {
                     ชื่อผู้ใช้
                   </p>
                   <p className="text-gray-900">{user.username}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">สิทธิ์การใช้งาน</p>
+                  <span
+                    className={`inline-block mt-1 px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้เรียน'}
+                  </span>
                 </div>
 
                 <div>
