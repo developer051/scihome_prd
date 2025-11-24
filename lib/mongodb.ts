@@ -1,6 +1,32 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/scihome';
+const rawUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/scihome';
+
+function ensureEncodedCredentials(uri: string) {
+  const credentialPattern = /(mongodb(?:\+srv)?:\/\/)([^@]+)@/;
+  const match = uri.match(credentialPattern);
+
+  if (!match) {
+    return uri;
+  }
+
+  const [, prefix, credentials] = match;
+  if (!credentials.includes(':')) {
+    return uri;
+  }
+
+  const [username, password] = credentials.split(':');
+
+  const safeUsername = encodeURIComponent(username);
+  const safePassword = encodeURIComponent(password);
+
+  return uri.replace(
+    credentialPattern,
+    `${prefix}${safeUsername}:${safePassword}@`
+  );
+}
+
+const MONGODB_URI = ensureEncodedCredentials(rawUri);
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');

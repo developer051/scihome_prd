@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: scihome-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: '2!p$$OcY^%OsoVB$$*0F3x'
+      MONGO_INITDB_DATABASE: scihome
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+    networks:
+      - scihome-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  scihome-network:
+    driver: bridge
