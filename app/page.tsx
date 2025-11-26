@@ -294,73 +294,125 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sections 1, 2, 3 */}
-      {sections
-        .filter((section) => section.order <= 3)
-        .sort((a, b) => a.order - b.order)
-        .map((section) => {
-          const sectionCats = categories.filter((cat) => {
-            const catSectionId = typeof cat.sectionId === 'string' ? cat.sectionId : cat.sectionId._id;
-            return catSectionId === section._id;
-          });
-          const sectionCoursesList = sectionCourses[section._id] || [];
+      {/* Sections 1, 2, 3 - Compact Glow Card Design */}
+      <section className="py-16 bg-gradient-to-b from-gray-50 via-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {sections
+              .filter((section) => section.order <= 3)
+              .sort((a, b) => a.order - b.order)
+              .map((section, index) => {
+                const sectionCats = categories.filter((cat) => {
+                  const catSectionId = typeof cat.sectionId === 'string' ? cat.sectionId : cat.sectionId._id;
+                  return catSectionId === section._id;
+                });
+                const sectionCoursesList = sectionCourses[section._id] || [];
 
-          return (
-            <section key={section._id} className="py-16 bg-gray-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                      {section.name}
-                    </h2>
-                    <p className="text-gray-600">
-                      {section.description || 'หลักสูตรคุณภาพสำหรับนักเรียนทุกคน'}
-                    </p>
-                  </div>
-                  <Link
-                    href="/courses"
-                    className="text-blue-600 hover:text-blue-700 font-medium mt-4 md:mt-0"
-                  >
-                    ดูหลักสูตรทั้งหมด →
-                  </Link>
-                </div>
+                // เลือกสี glow card ตามลำดับ section
+                const glowCardClass = 
+                  index === 0 ? 'section-glow-card-blue' :
+                  index === 1 ? 'section-glow-card-purple' :
+                  'section-glow-card-teal';
 
-                {/* Categories */}
-                {sectionCats.length > 0 && (
-                  <div className="mb-6 flex flex-wrap gap-2">
-                    {sectionCats.map((cat) => (
-                      <span
-                        key={cat._id}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                      >
-                        {cat.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                const glowColor = 
+                  index === 0 ? 'blue' :
+                  index === 1 ? 'purple' :
+                  'teal';
 
-                {/* Courses Grid */}
-                {loading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, index) => (
-                      <div key={index} className="bg-gray-200 animate-pulse rounded-lg h-64"></div>
-                    ))}
+                return (
+                  <div key={section._id} className={`${glowCardClass} flex flex-col h-full`}>
+                    <div className="relative z-10 flex flex-col h-full">
+                      {/* Image Placeholder or Icon */}
+                      <div className={`relative h-40 overflow-hidden ${
+                        glowColor === 'blue' 
+                          ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700' 
+                          : glowColor === 'purple'
+                          ? 'bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700'
+                          : 'bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700'
+                      }`}>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <FaBookOpen className="text-white text-5xl opacity-20" />
+                        </div>
+                        {/* Decorative pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                          <div className="absolute top-4 left-4 w-20 h-20 border-2 border-white rounded-full"></div>
+                          <div className="absolute bottom-4 right-4 w-16 h-16 border-2 border-white rounded-full"></div>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 flex flex-col p-5">
+                        {/* Header */}
+                        <div className="mb-3">
+                          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                            {section.name}
+                          </h3>
+                          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                            {section.description || 'หลักสูตรคุณภาพสำหรับนักเรียนทุกคน'}
+                          </p>
+                        </div>
+
+                        {/* Categories */}
+                        {sectionCats.length > 0 && (
+                          <div className="mb-3 flex flex-wrap gap-1.5">
+                            {sectionCats.slice(0, 2).map((cat) => (
+                              <span
+                                key={cat._id}
+                                className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  glowColor === 'blue'
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                    : glowColor === 'purple'
+                                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                    : 'bg-teal-50 text-teal-700 border border-teal-200'
+                                }`}
+                              >
+                                {cat.name}
+                              </span>
+                            ))}
+                            {sectionCats.length > 2 && (
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                glowColor === 'blue'
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                  : glowColor === 'purple'
+                                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                  : 'bg-teal-50 text-teal-700 border border-teal-200'
+                              }`}>
+                                +{sectionCats.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Course Count */}
+                        <div className="mb-3 flex items-center gap-2 text-xs text-gray-500">
+                          <FaGraduationCap className="text-gray-400 text-sm" />
+                          <span>{sectionCoursesList.length} หลักสูตร</span>
+                        </div>
+
+                        {/* Footer Link */}
+                        <div className="mt-auto pt-3 border-t border-gray-100">
+                          <Link
+                            href="/courses"
+                            className={`group inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 ${
+                              glowColor === 'blue' 
+                                ? 'text-blue-600 hover:text-blue-700' 
+                                : glowColor === 'purple'
+                                ? 'text-purple-600 hover:text-purple-700'
+                                : 'text-teal-600 hover:text-teal-700'
+                            }`}
+                          >
+                            ดูหลักสูตรทั้งหมด
+                            <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ) : sectionCoursesList.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {sectionCoursesList.map((course) => (
-                      <CourseSolutionCard key={course._id} course={course} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                    <p className="text-gray-600">ยังไม่มีหลักสูตรใน Section นี้</p>
-                  </div>
-                )}
-              </div>
-            </section>
-          );
-        })}
+                );
+              })}
+          </div>
+        </div>
+      </section>
 
       {/* Testimonials Section */}
       <section className="py-16 bg-white">
