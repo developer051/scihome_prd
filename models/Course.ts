@@ -19,8 +19,10 @@ export interface ILesson {
 export interface ICourse extends Document {
   name: string;
   description: string;
-  category: string;
-  level: string;
+  category: string; // Keep for backward compatibility
+  level: string; // Keep for backward compatibility
+  sectionId?: mongoose.Types.ObjectId;
+  categoryId?: mongoose.Types.ObjectId;
   price: number;
   schedule: string;
   image: string;
@@ -28,6 +30,7 @@ export interface ICourse extends Document {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  endDate?: Date;
   lessons: ILesson[];
   createdAt: Date;
   updatedAt: Date;
@@ -82,6 +85,20 @@ const CourseSchema = new Schema<ICourse>({
   isOnsite: {
     type: Boolean,
     default: true,
+  },
+  sectionId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Section',
+    default: null,
+  },
+  categoryId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null,
+  },
+  endDate: {
+    type: Date,
+    default: null,
   },
   lessons: {
     type: [{

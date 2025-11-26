@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3007",
+    "dev:safe": "node scripts/kill-port-3007.js && next dev -p 3007",
+    "kill-port": "node scripts/kill-port-3007.js",
     "build": "next build",
     "start": "next start -p 3007",
     "lint": "next lint",

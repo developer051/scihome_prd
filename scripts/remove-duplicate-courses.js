@@ -3,8 +3,34 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: '.env.local' });
 
+// Function to encode credentials in MongoDB URI
+function ensureEncodedCredentials(uri) {
+  const credentialPattern = /(mongodb(?:\+srv)?:\/\/)([^@]+)@/;
+  const match = uri.match(credentialPattern);
+
+  if (!match) {
+    return uri;
+  }
+
+  const [, prefix, credentials] = match;
+  if (!credentials.includes(':')) {
+    return uri;
+  }
+
+  const [username, password] = credentials.split(':');
+
+  const safeUsername = encodeURIComponent(username);
+  const safePassword = encodeURIComponent(password);
+
+  return uri.replace(
+    credentialPattern,
+    `${prefix}${safeUsername}:${safePassword}@`
+  );
+}
+
 const DEFAULT_URI = 'mongodb://localhost:27017/scihome';
-const uri = process.env.MONGODB_URI || DEFAULT_URI;
+const rawUri = process.env.MONGODB_URI || DEFAULT_URI;
+const uri = ensureEncodedCredentials(rawUri);
 const explicitDb = process.env.MONGODB_DB;
 
 const deriveDbName = (connectionString) => {

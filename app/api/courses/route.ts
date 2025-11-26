@@ -506,15 +506,28 @@ const mockCourses = [
 // Export mockCourses for use in other modules
 export { mockCourses };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    let courses = await Course.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const sectionId = searchParams.get('sectionId');
+    const categoryId = searchParams.get('categoryId');
+    
+    // Build query
+    let query: any = {};
+    if (sectionId) {
+      query.sectionId = sectionId;
+    }
+    if (categoryId) {
+      query.categoryId = categoryId;
+    }
+    
+    let courses = await Course.find(query).sort({ createdAt: -1 });
     
     // ถ้ายังไม่มีข้อมูลในฐานข้อมูล ให้เพิ่ม mock data
-    if (courses.length === 0) {
+    if (courses.length === 0 && !sectionId && !categoryId) {
       await Course.insertMany(mockCourses);
-      courses = await Course.find({}).sort({ createdAt: -1 });
+      courses = await Course.find(query).sort({ createdAt: -1 });
     } else {
       // อัปเดต lessons ให้กับหลักสูตรที่ยังไม่มี lessons
       // สร้าง map ของ mock courses ตามชื่อ
@@ -538,7 +551,7 @@ export async function GET() {
       await Promise.all(updatePromises);
       
       // ดึงข้อมูลใหม่หลังจากอัปเดต
-      courses = await Course.find({}).sort({ createdAt: -1 });
+      courses = await Course.find(query).sort({ createdAt: -1 });
     }
     
     return NextResponse.json(courses);

@@ -50,6 +50,19 @@ interface News {
   publishedAt: string;
 }
 
+interface Section {
+  _id: string;
+  name: string;
+  description: string;
+  order: number;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  sectionId: string | Section;
+}
+
 export default function HomePage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
@@ -57,6 +70,9 @@ export default function HomePage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [allNews, setAllNews] = useState<News[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [sectionCourses, setSectionCourses] = useState<Record<string, Course[]>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -66,16 +82,20 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesRes, testimonialsRes, newsRes] = await Promise.all([
+        const [coursesRes, testimonialsRes, newsRes, sectionsRes, categoriesRes] = await Promise.all([
           fetch('/api/courses'),
           fetch('/api/testimonials'),
           fetch('/api/news'),
+          fetch('/api/sections'),
+          fetch('/api/categories'),
         ]);
 
-        const [coursesData, testimonialsData, newsData] = await Promise.all([
+        const [coursesData, testimonialsData, newsData, sectionsData, categoriesData] = await Promise.all([
           coursesRes.json(),
           testimonialsRes.json(),
           newsRes.json(),
+          sectionsRes.json(),
+          categoriesRes.json(),
         ]);
 
         setAllCourses(coursesData);
@@ -83,6 +103,28 @@ export default function HomePage() {
         setTestimonials(testimonialsData.slice(0, 3));
         setAllNews(newsData);
         setNews(newsData.slice(0, 6));
+        setSections(sectionsData);
+        setCategories(categoriesData);
+
+        // Get courses for sections 1, 2, 3
+        const targetSections = sectionsData.filter((s: Section) => s.order <= 3);
+        const sectionCoursesMap: Record<string, Course[]> = {};
+        
+        for (const section of targetSections) {
+          const sectionCats = categoriesData.filter((cat: Category) => {
+            const catSectionId = typeof cat.sectionId === 'string' ? cat.sectionId : cat.sectionId._id;
+            return catSectionId === section._id;
+          });
+          
+          const sectionCoursesList = coursesData.filter((course: Course) => {
+            if (course.sectionId === section._id) return true;
+            return sectionCats.some((cat: Category) => cat._id === course.categoryId);
+          });
+          
+          sectionCoursesMap[section._id] = sectionCoursesList.slice(0, 6); // Limit to 6 courses per section
+        }
+        
+        setSectionCourses(sectionCoursesMap);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -126,8 +168,6 @@ export default function HomePage() {
   useEffect(() => {
     setNews(allNews.slice(0, newsDisplayCount));
   }, [newsDisplayCount, allNews]);
-
-  const categories = Array.from(new Set(allCourses.map((course) => course.category)));
 
   const features = [
     {
@@ -254,101 +294,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular Courses Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                หลักสูตรยอดนิยม
-              </h2>
-              <p className="text-gray-600">
-                หลักสูตรที่ได้รับความนิยมจากนักเรียนและผู้ปกครอง
-              </p>
-            </div>
-            <Link
-              href="/courses"
-              className="text-blue-600 hover:text-blue-700 font-medium mt-4 md:mt-0"
-            >
-              ดูหลักสูตรทั้งหมด →
-            </Link>
-          </div>
+      {/* Sections 1, 2, 3 */}
+      {sections
+        .filter((section) => section.order <= 3)
+        .sort((a, b) => a.order - b.order)
+        .map((section) => {
+          const sectionCats = categories.filter((cat) => {
+            const catSectionId = typeof cat.sectionId === 'string' ? cat.sectionId : cat.sectionId._id;
+            return catSectionId === section._id;
+          });
+          const sectionCoursesList = sectionCourses[section._id] || [];
 
-          {/* Filter and Search */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="ค้นหาหลักสูตร"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              />
-            </div>
-            <div className="relative md:w-64">
-              <FaFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-              >
-                <option value="">ทั้งหมด</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          return (
+            <section key={section._id} className="py-16 bg-gray-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                      {section.name}
+                    </h2>
+                    <p className="text-gray-600">
+                      {section.description || 'หลักสูตรคุณภาพสำหรับนักเรียนทุกคน'}
+                    </p>
+                  </div>
+                  <Link
+                    href="/courses"
+                    className="text-blue-600 hover:text-blue-700 font-medium mt-4 md:mt-0"
+                  >
+                    ดูหลักสูตรทั้งหมด →
+                  </Link>
+                </div>
 
-          <div className="mb-4 text-sm text-gray-600">
-            พบ {filteredCourses.length} หลักสูตร
-            {courses.length > 0 && ` (แสดง 1-${courses.length})`}
-          </div>
+                {/* Categories */}
+                {sectionCats.length > 0 && (
+                  <div className="mb-6 flex flex-wrap gap-2">
+                    {sectionCats.map((cat) => (
+                      <span
+                        key={cat._id}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      >
+                        {cat.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-          {/* Courses Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-gray-200 animate-pulse rounded-lg h-64"></div>
-              ))}
-            </div>
-          ) : courses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course) => (
-                <CourseSolutionCard key={course._id} course={course} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-              <p className="text-gray-600">ไม่พบหลักสูตรที่ค้นหา</p>
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('');
-                }}
-                className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
-              >
-                ล้างการค้นหา
-              </button>
-            </div>
-          )}
-
-          {/* Show More Button */}
-          {!loading && courses.length < filteredCourses.length && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => setDisplayCount(displayCount + 15)}
-                className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                แสดงอีก 15 รายการ
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
+                {/* Courses Grid */}
+                {loading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, index) => (
+                      <div key={index} className="bg-gray-200 animate-pulse rounded-lg h-64"></div>
+                    ))}
+                  </div>
+                ) : sectionCoursesList.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {sectionCoursesList.map((course) => (
+                      <CourseSolutionCard key={course._id} course={course} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                    <p className="text-gray-600">ยังไม่มีหลักสูตรใน Section นี้</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        })}
 
       {/* Testimonials Section */}
       <section className="py-16 bg-white">

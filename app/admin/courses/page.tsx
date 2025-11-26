@@ -14,6 +14,8 @@ interface Course {
   description: string;
   category: string;
   level: string;
+  sectionId?: string;
+  categoryId?: string;
   price: number;
   schedule: string;
   image: string;
@@ -21,6 +23,7 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  endDate?: string;
   lessons?: ILesson[];
   createdAt: string;
 }
@@ -573,6 +576,8 @@ function CourseForm({ course, onSubmit, onClose }: {
     description: course?.description || '',
     category: course?.category || '',
     level: course?.level || '',
+    sectionId: course?.sectionId || '',
+    categoryId: course?.categoryId || '',
     price: course?.price || 0,
     schedule: course?.schedule || '',
     image: course?.image || '',
@@ -580,11 +585,15 @@ function CourseForm({ course, onSubmit, onClose }: {
     maxStudents: course?.maxStudents || 20,
     isOnline: course?.isOnline || false,
     isOnsite: course?.isOnsite || true,
+    endDate: course?.endDate ? new Date(course.endDate).toISOString().split('T')[0] : '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(course?.image || '');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [sections, setSections] = useState<any[]>([]);
+  const [categoryList, setCategoryList] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   const categories = [
     'คณิตศาสตร์',
@@ -605,6 +614,36 @@ function CourseForm({ course, onSubmit, onClose }: {
     'ม.6',
     'เตรียมสอบเข้า',
   ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [sectionsRes, categoriesRes] = await Promise.all([
+          fetch('/api/sections'),
+          fetch('/api/categories'),
+        ]);
+        const [sectionsData, categoriesData] = await Promise.all([
+          sectionsRes.json(),
+          categoriesRes.json(),
+        ]);
+        setSections(sectionsData);
+        setCategoryList(categoriesData);
+      } catch (error) {
+        console.error('Error fetching sections/categories:', error);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredCategories = formData.sectionId
+    ? categoryList.filter((cat) => 
+        typeof cat.sectionId === 'string' 
+          ? cat.sectionId === formData.sectionId 
+          : cat.sectionId._id === formData.sectionId
+      )
+    : categoryList;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -676,7 +715,13 @@ function CourseForm({ course, onSubmit, onClose }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const submitData = {
+      ...formData,
+      endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+      sectionId: formData.sectionId || null,
+      categoryId: formData.categoryId || null,
+    };
+    onSubmit(submitData);
   };
 
   return (
@@ -703,7 +748,48 @@ function CourseForm({ course, onSubmit, onClose }: {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                หมวดหมู่ *
+                Section
+              </label>
+              <select
+                name="sectionId"
+                value={formData.sectionId}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loadingData}
+              >
+                <option value="">เลือก Section (ไม่บังคับ)</option>
+                {sections.map((section) => (
+                  <option key={section._id} value={section._id}>
+                    {section.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loadingData || !formData.sectionId}
+              >
+                <option value="">เลือก Category (ไม่บังคับ)</option>
+                {filteredCategories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                หมวดหมู่ (เดิม) *
               </label>
               <select
                 name="category"
@@ -846,27 +932,41 @@ function CourseForm({ course, onSubmit, onClose }: {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
-            <label className="flex items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                วันสิ้นสุดคอร์ส
+              </label>
               <input
-                type="checkbox"
-                name="isOnline"
-                checked={formData.isOnline}
+                type="datetime-local"
+                name="endDate"
+                value={formData.endDate}
                 onChange={handleChange}
-                className="mr-2"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">ออนไลน์</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="isOnsite"
-                checked={formData.isOnsite}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              <span className="text-sm text-gray-700">ออนไซต์</span>
-            </label>
+            </div>
+            <div className="flex items-end space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isOnline"
+                  checked={formData.isOnline}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <span className="text-sm text-gray-700">ออนไลน์</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isOnsite"
+                  checked={formData.isOnsite}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <span className="text-sm text-gray-700">ออนไซต์</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">

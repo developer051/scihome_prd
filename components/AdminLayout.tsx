@@ -14,7 +14,9 @@ import {
   FaTimes,
   FaFileAlt,
   FaClipboardList,
-  FaUsers
+  FaUsers,
+  FaFolder,
+  FaTags
 } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 
@@ -61,6 +63,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { name: 'Dashboard', href: '/admin', icon: FaTachometerAlt },
+    { name: 'Section', href: '/admin/sections', icon: FaFolder },
+    { name: 'Category', href: '/admin/categories', icon: FaTags },
     { name: 'หลักสูตร', href: '/admin/courses', icon: FaGraduationCap },
     { name: 'ข้อสอบ', href: '/admin/exams', icon: FaFileAlt },
     { name: 'ครูผู้สอน', href: '/admin/teachers', icon: FaChalkboardTeacher },
