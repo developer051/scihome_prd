@@ -48,13 +48,15 @@ const CourseSchema = new Schema<ICourse>({
   },
   category: {
     type: String,
-    required: [true, 'Course category is required'],
+    required: false,
     enum: ['คณิตศาสตร์', 'ภาษาอังกฤษ', 'ฟิสิกส์', 'เคมี', 'ชีววิทยา', 'สังคมศึกษา', 'ภาษาไทย'],
+    default: null,
   },
   level: {
     type: String,
-    required: [true, 'Course level is required'],
+    required: false,
     enum: ['ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6', 'เตรียมสอบเข้า'],
+    default: null,
   },
   price: {
     type: Number,

@@ -512,6 +512,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('sectionId');
     const categoryId = searchParams.get('categoryId');
+    const populate = searchParams.get('populate') === 'true';
     
     // Build query
     let query: any = {};
@@ -522,12 +523,29 @@ export async function GET(request: NextRequest) {
       query.categoryId = categoryId;
     }
     
-    let courses = await Course.find(query).sort({ createdAt: -1 });
+    let coursesQuery = Course.find(query).sort({ createdAt: -1 });
+    
+    // Populate sectionId and categoryId if requested
+    if (populate) {
+      coursesQuery = coursesQuery.populate('sectionId').populate({
+        path: 'categoryId',
+        populate: { path: 'sectionId' }
+      });
+    }
+    
+    let courses = await coursesQuery;
     
     // ถ้ายังไม่มีข้อมูลในฐานข้อมูล ให้เพิ่ม mock data
     if (courses.length === 0 && !sectionId && !categoryId) {
       await Course.insertMany(mockCourses);
-      courses = await Course.find(query).sort({ createdAt: -1 });
+      coursesQuery = Course.find(query).sort({ createdAt: -1 });
+      if (populate) {
+        coursesQuery = coursesQuery.populate('sectionId').populate({
+          path: 'categoryId',
+          populate: { path: 'sectionId' }
+        });
+      }
+      courses = await coursesQuery;
     } else {
       // อัปเดต lessons ให้กับหลักสูตรที่ยังไม่มี lessons
       // สร้าง map ของ mock courses ตามชื่อ
@@ -551,7 +569,14 @@ export async function GET(request: NextRequest) {
       await Promise.all(updatePromises);
       
       // ดึงข้อมูลใหม่หลังจากอัปเดต
-      courses = await Course.find(query).sort({ createdAt: -1 });
+      coursesQuery = Course.find(query).sort({ createdAt: -1 });
+      if (populate) {
+        coursesQuery = coursesQuery.populate('sectionId').populate({
+          path: 'categoryId',
+          populate: { path: 'sectionId' }
+        });
+      }
+      courses = await coursesQuery;
     }
     
     return NextResponse.json(courses);

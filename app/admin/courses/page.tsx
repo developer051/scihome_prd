@@ -12,10 +12,10 @@ interface Course {
   _id: string;
   name: string;
   description: string;
-  category: string;
-  level: string;
-  sectionId?: string;
-  categoryId?: string;
+  category?: string; // Keep for backward compatibility but not displayed
+  level?: string; // Keep for backward compatibility but not displayed
+  sectionId?: string | { _id: string; name: string };
+  categoryId?: string | { _id: string; name: string; sectionId?: string | { _id: string; name: string } };
   price: number;
   schedule: string;
   image: string;
@@ -56,12 +56,22 @@ export default function AdminCoursesPage() {
       label: 'ชื่อหลักสูตร',
     },
     {
-      key: 'category',
-      label: 'หมวดหมู่',
+      key: 'sectionId',
+      label: 'Section',
+      render: (value: any) => {
+        if (!value) return '-';
+        if (typeof value === 'object' && value.name) return value.name;
+        return '-';
+      },
     },
     {
-      key: 'level',
-      label: 'ระดับชั้น',
+      key: 'categoryId',
+      label: 'Category',
+      render: (value: any) => {
+        if (!value) return '-';
+        if (typeof value === 'object' && value.name) return value.name;
+        return '-';
+      },
     },
     {
       key: 'price',
@@ -92,7 +102,7 @@ export default function AdminCoursesPage() {
   const fetchCourses = async () => {
     try {
       console.log('Fetching courses...');
-      const response = await fetch('/api/courses');
+      const response = await fetch('/api/courses?populate=true');
       const data = await response.json();
       console.log('Courses fetched:', data.length);
       setCourses(data);
@@ -438,12 +448,30 @@ export default function AdminCoursesPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {courses
-                  .filter((course) =>
-                    columns.some((column) => {
-                      const value = course[column.key as keyof Course];
-                      return value && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
-                    })
-                  )
+                  .filter((course) => {
+                    if (!searchTerm) return true;
+                    const searchLower = searchTerm.toLowerCase();
+                    // Search in name and description
+                    if (course.name.toLowerCase().includes(searchLower) || 
+                        course.description.toLowerCase().includes(searchLower)) {
+                      return true;
+                    }
+                    // Search in section name
+                    const sectionName = typeof course.sectionId === 'object' && course.sectionId?.name 
+                      ? course.sectionId.name 
+                      : '';
+                    if (sectionName.toLowerCase().includes(searchLower)) {
+                      return true;
+                    }
+                    // Search in category name
+                    const categoryName = typeof course.categoryId === 'object' && course.categoryId?.name 
+                      ? course.categoryId.name 
+                      : '';
+                    if (categoryName.toLowerCase().includes(searchLower)) {
+                      return true;
+                    }
+                    return false;
+                  })
                   .map((course) => {
                   const isExpanded = expandedRows.has(course._id);
                   return (
@@ -574,10 +602,12 @@ function CourseForm({ course, onSubmit, onClose }: {
   const [formData, setFormData] = useState({
     name: course?.name || '',
     description: course?.description || '',
-    category: course?.category || '',
-    level: course?.level || '',
-    sectionId: course?.sectionId || '',
-    categoryId: course?.categoryId || '',
+    sectionId: typeof course?.sectionId === 'object' && course?.sectionId?._id 
+      ? course.sectionId._id 
+      : course?.sectionId || '',
+    categoryId: typeof course?.categoryId === 'object' && course?.categoryId?._id 
+      ? course.categoryId._id 
+      : course?.categoryId || '',
     price: course?.price || 0,
     schedule: course?.schedule || '',
     image: course?.image || '',
@@ -594,26 +624,6 @@ function CourseForm({ course, onSubmit, onClose }: {
   const [sections, setSections] = useState<any[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-
-  const categories = [
-    'คณิตศาสตร์',
-    'ภาษาอังกฤษ',
-    'ฟิสิกส์',
-    'เคมี',
-    'ชีววิทยา',
-    'สังคมศึกษา',
-    'ภาษาไทย',
-  ];
-
-  const levels = [
-    'ม.1',
-    'ม.2',
-    'ม.3',
-    'ม.4',
-    'ม.5',
-    'ม.6',
-    'เตรียมสอบเข้า',
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -767,45 +777,24 @@ function CourseForm({ course, onSubmit, onClose }: {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={loadingData || !formData.sectionId}
-              >
-                <option value="">เลือก Category (ไม่บังคับ)</option>
-                {filteredCategories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                หมวดหมู่ (เดิม) *
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">เลือกหมวดหมู่</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loadingData || !formData.sectionId}
+            >
+              <option value="">เลือก Category (ไม่บังคับ)</option>
+              {filteredCategories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -823,25 +812,6 @@ function CourseForm({ course, onSubmit, onClose }: {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ระดับชั้น *
-              </label>
-              <select
-                name="level"
-                value={formData.level}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">เลือกระดับชั้น</option>
-                {levels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 ราคา *
@@ -867,6 +837,18 @@ function CourseForm({ course, onSubmit, onClose }: {
                 onChange={handleChange}
                 required
                 placeholder="เช่น 3 เดือน"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                วันสิ้นสุดคอร์ส
+              </label>
+              <input
+                type="datetime-local"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -932,41 +914,27 @@ function CourseForm({ course, onSubmit, onClose }: {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                วันสิ้นสุดคอร์ส
-              </label>
+          <div className="flex items-end space-x-4">
+            <label className="flex items-center">
               <input
-                type="datetime-local"
-                name="endDate"
-                value={formData.endDate}
+                type="checkbox"
+                name="isOnline"
+                checked={formData.isOnline}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mr-2"
               />
-            </div>
-            <div className="flex items-end space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="isOnline"
-                  checked={formData.isOnline}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">ออนไลน์</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="isOnsite"
-                  checked={formData.isOnsite}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">ออนไซต์</span>
-              </label>
-            </div>
+              <span className="text-sm text-gray-700">ออนไลน์</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                name="isOnsite"
+                checked={formData.isOnsite}
+                onChange={handleChange}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700">ออนไซต์</span>
+            </label>
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">
