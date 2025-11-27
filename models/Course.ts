@@ -30,6 +30,7 @@ export interface ICourse extends Document {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  isActive: boolean;
   endDate?: Date;
   lessons: ILesson[];
   createdAt: Date;
@@ -85,6 +86,10 @@ const CourseSchema = new Schema<ICourse>({
     default: false,
   },
   isOnsite: {
+    type: Boolean,
+    default: true,
+  },
+  isActive: {
     type: Boolean,
     default: true,
   },

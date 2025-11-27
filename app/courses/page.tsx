@@ -17,25 +17,25 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  sectionId?: string;
+  categoryId?: string;
+}
+
+interface Section {
+  _id: string;
+  name: string;
+  description: string;
+  order: number;
 }
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
-
-  const categories = [
-    'คณิตศาสตร์',
-    'ภาษาอังกฤษ',
-    'ฟิสิกส์',
-    'เคมี',
-    'ชีววิทยา',
-    'สังคมศึกษา',
-    'ภาษาไทย',
-  ];
 
   const levels = [
     'ม.1',
@@ -48,20 +48,29 @@ export default function CoursesPage() {
   ];
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/courses');
-        const data = await response.json();
-        setCourses(data);
-        setFilteredCourses(data);
+        const [coursesRes, sectionsRes] = await Promise.all([
+          fetch('/api/courses'),
+          fetch('/api/sections'),
+        ]);
+
+        const [coursesData, sectionsData] = await Promise.all([
+          coursesRes.json(),
+          sectionsRes.json(),
+        ]);
+
+        setCourses(coursesData);
+        setFilteredCourses(coursesData);
+        setSections(sectionsData.sort((a: Section, b: Section) => a.order - b.order));
       } catch (error) {
-        console.error('Error fetching courses:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -75,8 +84,8 @@ export default function CoursesPage() {
       );
     }
 
-    if (selectedCategory) {
-      filtered = filtered.filter((course) => course.category === selectedCategory);
+    if (selectedSection) {
+      filtered = filtered.filter((course) => course.sectionId === selectedSection);
     }
 
     if (selectedLevel) {
@@ -84,7 +93,7 @@ export default function CoursesPage() {
     }
 
     setFilteredCourses(filtered);
-  }, [courses, searchTerm, selectedCategory, selectedLevel]);
+  }, [courses, searchTerm, selectedSection, selectedLevel]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,7 +110,7 @@ export default function CoursesPage() {
         <div className="mb-6">
           <p className="text-gray-600">
             พบ {filteredCourses.length} หลักสูตร
-            {(searchTerm || selectedCategory || selectedLevel) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
+            {(searchTerm || selectedSection || selectedLevel) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
           </p>
         </div>
 
@@ -133,37 +142,37 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                {/* Category Filter */}
-                <div>
+                {/* Section Filter */}
+                <section>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     หมวดหมู่
                   </label>
                   <div className="space-y-2">
                     <button
-                      onClick={() => setSelectedCategory('')}
+                      onClick={() => setSelectedSection('')}
                       className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                        selectedCategory === ''
+                        selectedSection === ''
                           ? 'bg-blue-100 text-blue-700 font-medium'
                           : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                       }`}
                     >
                       ทุกหมวดหมู่
                     </button>
-                    {categories.map((category) => (
+                    {sections.map((section) => (
                       <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
+                        key={section._id}
+                        onClick={() => setSelectedSection(section._id)}
                         className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                          selectedCategory === category
+                          selectedSection === section._id
                             ? 'bg-blue-100 text-blue-700 font-medium'
                             : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        {category}
+                        {section.name}
                       </button>
                     ))}
                   </div>
-                </div>
+                </section>
 
                 {/* Level Filter */}
                 <div>
@@ -185,11 +194,11 @@ export default function CoursesPage() {
                 </div>
 
                 {/* Clear Filters */}
-                {(searchTerm || selectedCategory || selectedLevel) && (
+                {(searchTerm || selectedSection || selectedLevel) && (
                   <button
                     onClick={() => {
                       setSearchTerm('');
-                      setSelectedCategory('');
+                      setSelectedSection('');
                       setSelectedLevel('');
                     }}
                     className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
@@ -225,7 +234,7 @@ export default function CoursesPage() {
                 <button
                   onClick={() => {
                     setSearchTerm('');
-                    setSelectedCategory('');
+                    setSelectedSection('');
                     setSelectedLevel('');
                   }}
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"

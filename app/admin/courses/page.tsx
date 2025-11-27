@@ -5,7 +5,7 @@ import AdminLayout from '@/components/AdminLayout';
 import CourseContentExpander from '@/components/CourseContentExpander';
 import LessonForm from '@/components/LessonForm';
 import SubLessonForm from '@/components/SubLessonForm';
-import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaCopy } from 'react-icons/fa';
 import { ILesson, ISubLesson } from '@/models/Course';
 
 interface Course {
@@ -23,6 +23,7 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  isActive?: boolean;
   endDate?: string;
   lessons?: ILesson[];
   createdAt: string;
@@ -49,6 +50,9 @@ export default function AdminCoursesPage() {
   const [editingSubLesson, setEditingSubLesson] = useState<ISubLesson | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
+  const [isDisabling, setIsDisabling] = useState(false);
+  const [copyingCourseId, setCopyingCourseId] = useState<string | null>(null);
 
   const columns: Column<Course>[] = [
     {
@@ -92,6 +96,15 @@ export default function AdminCoursesPage() {
       key: 'isOnsite',
       label: 'ออนไซต์',
       render: (value: boolean) => value ? '✓' : '✗',
+    },
+    {
+      key: 'isActive',
+      label: 'สถานะ',
+      render: (value: boolean) => value !== false ? (
+        <span className="text-green-600 font-medium">ใช้งาน</span>
+      ) : (
+        <span className="text-red-600 font-medium">ยกเลิกแล้ว</span>
+      ),
     },
   ];
 
@@ -161,6 +174,158 @@ export default function AdminCoursesPage() {
       } catch (error) {
         alert('เกิดข้อผิดพลาดในการลบหลักสูตร');
       }
+    }
+  };
+
+  const handleCopy = async (course: Course) => {
+    if (!confirm(`คุณต้องการคัดลอกหลักสูตร "${course.name}" หรือไม่?`)) {
+      return;
+    }
+
+    setCopyingCourseId(course._id);
+    try {
+      // ดึงข้อมูล course พร้อม lessons และ subLessons จาก API
+      const response = await fetch(`/api/courses/${course._id}`);
+      if (!response.ok) {
+        throw new Error('ไม่สามารถดึงข้อมูลหลักสูตรได้');
+      }
+
+      const courseData = await response.json();
+      
+      // สร้างข้อมูล course ใหม่โดย copy ข้อมูลทั้งหมด
+      const newCourseData = {
+        name: `สำเนา - ${course.name}`,
+        description: course.description,
+        sectionId: typeof course.sectionId === 'object' && course.sectionId?._id 
+          ? course.sectionId._id 
+          : course.sectionId || null,
+        categoryId: typeof course.categoryId === 'object' && course.categoryId?._id 
+          ? course.categoryId._id 
+          : course.categoryId || null,
+        price: course.price,
+        schedule: course.schedule,
+        image: course.image,
+        duration: course.duration,
+        maxStudents: course.maxStudents,
+        isOnline: course.isOnline,
+        isOnsite: course.isOnsite,
+        isActive: true, // ตั้งค่าเป็น active สำหรับ course ใหม่
+        endDate: course.endDate || null,
+        lessons: courseData.lessons ? courseData.lessons.map((lesson: ILesson) => ({
+          title: lesson.title,
+          description: lesson.description,
+          order: lesson.order,
+          youtubeLink: lesson.youtubeLink || '',
+          subLessons: lesson.subLessons ? lesson.subLessons.map((subLesson: ISubLesson) => ({
+            title: subLesson.title,
+            description: subLesson.description,
+            order: subLesson.order,
+            duration: subLesson.duration,
+            youtubeLink: subLesson.youtubeLink || '',
+          })) : [],
+        })) : [],
+      };
+
+      // สร้าง course ใหม่
+      const createResponse = await fetch('/api/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCourseData),
+      });
+
+      if (createResponse.ok) {
+        alert('คัดลอกหลักสูตรสำเร็จ');
+        fetchCourses();
+      } else {
+        const errorData = await createResponse.json();
+        throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการคัดลอกหลักสูตร');
+      }
+    } catch (error: any) {
+      console.error('Error copying course:', error);
+      alert(error.message || 'เกิดข้อผิดพลาดในการคัดลอกหลักสูตร');
+    } finally {
+      setCopyingCourseId(null);
+    }
+  };
+
+  const handleSelectCourse = (courseId: string) => {
+    const newSelected = new Set(selectedCourses);
+    if (newSelected.has(courseId)) {
+      newSelected.delete(courseId);
+    } else {
+      newSelected.add(courseId);
+    }
+    setSelectedCourses(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    const filteredCourses = courses.filter((course) => {
+      if (!searchTerm) return true;
+      const searchLower = searchTerm.toLowerCase();
+      if (course.name.toLowerCase().includes(searchLower) || 
+          course.description.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+      const sectionName = typeof course.sectionId === 'object' && course.sectionId?.name 
+        ? course.sectionId.name 
+        : '';
+      if (sectionName.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+      const categoryName = typeof course.categoryId === 'object' && course.categoryId?.name 
+        ? course.categoryId.name 
+        : '';
+      if (categoryName.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+      return false;
+    });
+
+    if (selectedCourses.size === filteredCourses.length) {
+      setSelectedCourses(new Set());
+    } else {
+      setSelectedCourses(new Set(filteredCourses.map(c => c._id)));
+    }
+  };
+
+  const handleBulkDisable = async () => {
+    if (selectedCourses.size === 0) {
+      alert('กรุณาเลือกหลักสูตรที่ต้องการยกเลิกการใช้งาน');
+      return;
+    }
+
+    if (!confirm(`คุณแน่ใจหรือไม่ที่จะยกเลิกการใช้งานหลักสูตร ${selectedCourses.size} รายการ?`)) {
+      return;
+    }
+
+    setIsDisabling(true);
+    try {
+      const promises = Array.from(selectedCourses).map(courseId =>
+        fetch(`/api/courses/${courseId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ isActive: false }),
+        })
+      );
+
+      const results = await Promise.allSettled(promises);
+      const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+
+      if (failed.length > 0) {
+        alert(`เกิดข้อผิดพลาดในการยกเลิกการใช้งาน ${failed.length} รายการ`);
+      } else {
+        alert(`ยกเลิกการใช้งานหลักสูตร ${selectedCourses.size} รายการสำเร็จ`);
+        setSelectedCourses(new Set());
+        fetchCourses();
+      }
+    } catch (error) {
+      alert('เกิดข้อผิดพลาดในการยกเลิกการใช้งานหลักสูตร');
+    } finally {
+      setIsDisabling(false);
     }
   };
 
@@ -414,17 +579,26 @@ export default function AdminCoursesPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-900">รายการหลักสูตร</h3>
+            {selectedCourses.size > 0 && (
+              <button
+                onClick={handleBulkDisable}
+                disabled={isDisabling}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDisabling ? 'กำลังดำเนินการ...' : `ยกเลิกการใช้งาน (${selectedCourses.size})`}
+              </button>
+            )}
           </div>
 
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 flex gap-4 items-center">
             <input
               type="text"
               placeholder="ค้นหา..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -432,6 +606,34 @@ export default function AdminCoursesPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                    <input
+                      type="checkbox"
+                      checked={selectedCourses.size > 0 && selectedCourses.size === courses.filter((course) => {
+                        if (!searchTerm) return true;
+                        const searchLower = searchTerm.toLowerCase();
+                        if (course.name.toLowerCase().includes(searchLower) || 
+                            course.description.toLowerCase().includes(searchLower)) {
+                          return true;
+                        }
+                        const sectionName = typeof course.sectionId === 'object' && course.sectionId?.name 
+                          ? course.sectionId.name 
+                          : '';
+                        if (sectionName.toLowerCase().includes(searchLower)) {
+                          return true;
+                        }
+                        const categoryName = typeof course.categoryId === 'object' && course.categoryId?.name 
+                          ? course.categoryId.name 
+                          : '';
+                        if (categoryName.toLowerCase().includes(searchLower)) {
+                          return true;
+                        }
+                        return false;
+                      }).length}
+                      onChange={handleSelectAll}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"></th>
                   {columns.map((column) => (
                     <th
@@ -476,7 +678,15 @@ export default function AdminCoursesPage() {
                   const isExpanded = expandedRows.has(course._id);
                   return (
                     <React.Fragment key={course._id}>
-                      <tr className="hover:bg-gray-50">
+                      <tr className={`hover:bg-gray-50 ${course.isActive === false ? 'opacity-50 bg-gray-100' : ''}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedCourses.has(course._id)}
+                            onChange={() => handleSelectCourse(course._id)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
                             onClick={() => toggleRow(course._id)}
@@ -501,6 +711,14 @@ export default function AdminCoursesPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button
+                              onClick={() => handleCopy(course)}
+                              disabled={copyingCourseId === course._id}
+                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="คัดลอก"
+                            >
+                              <FaCopy size={16} />
+                            </button>
+                            <button
                               onClick={() => handleEdit(course)}
                               className="text-indigo-600 hover:text-indigo-900"
                               title="แก้ไข"
@@ -519,7 +737,7 @@ export default function AdminCoursesPage() {
                       </tr>
                       {isExpanded && (
                         <tr key={`${course._id}-expanded`}>
-                          <td colSpan={columns.length + 2} className="p-0 border-t-0 bg-gray-50">
+                          <td colSpan={columns.length + 3} className="p-0 border-t-0 bg-gray-50">
                             <CourseContentExpander
                               courseId={course._id}
                               lessons={course.lessons || []}
