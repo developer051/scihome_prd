@@ -5,7 +5,7 @@ import AdminLayout from '@/components/AdminLayout';
 import CourseContentExpander from '@/components/CourseContentExpander';
 import LessonForm from '@/components/LessonForm';
 import SubLessonForm from '@/components/SubLessonForm';
-import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaCopy } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaCopy, FaUsers } from 'react-icons/fa';
 import { ILesson, ISubLesson } from '@/models/Course';
 
 interface Course {
@@ -30,9 +30,9 @@ interface Course {
 }
 
 type Column<T = Course> = {
-  key: keyof T;
+  key: keyof T | string;
   label: string;
-  render?: (value: any) => React.ReactNode;
+  render?: (value: any, course?: T) => React.ReactNode;
 };
 
 export default function AdminCoursesPage() {
@@ -53,6 +53,12 @@ export default function AdminCoursesPage() {
   const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
   const [isDisabling, setIsDisabling] = useState(false);
   const [copyingCourseId, setCopyingCourseId] = useState<string | null>(null);
+  const [enrollmentCounts, setEnrollmentCounts] = useState<Record<string, number>>({});
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [selectedCourseName, setSelectedCourseName] = useState<string>('');
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(false);
 
   const columns: Column<Course>[] = [
     {
@@ -88,6 +94,29 @@ export default function AdminCoursesPage() {
       render: (value: number) => `${value} คน`,
     },
     {
+      key: 'enrollmentCount',
+      label: 'ผู้ลงทะเบียน',
+      render: (value: any, course: Course) => {
+        const count = enrollmentCounts[course._id] || 0;
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewEnrollments(course._id, course.name);
+              }}
+              className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+              title="ดูรายชื่อผู้ลงทะเบียน"
+            >
+              <FaUsers className="text-blue-600" size={16} />
+              <span className="font-medium text-gray-900">{count}</span>
+              <span className="text-gray-500 text-sm">คน</span>
+            </button>
+          </div>
+        );
+      },
+    },
+    {
       key: 'isOnline',
       label: 'ออนไลน์',
       render: (value: boolean) => value ? '✓' : '✗',
@@ -111,6 +140,12 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    if (courses.length > 0) {
+      fetchEnrollmentCounts();
+    }
+  }, [courses]);
 
   const fetchCourses = async () => {
     try {
@@ -153,6 +188,63 @@ export default function AdminCoursesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchEnrollmentCounts = async () => {
+    try {
+      const counts: Record<string, number> = {};
+      
+      // ดึงจำนวน enrollment ของทุกคอร์สพร้อมกัน
+      const promises = courses.map(async (course) => {
+        try {
+          const response = await fetch(`/api/enrollments/course/${course._id}`);
+          if (response.ok) {
+            const data = await response.json();
+            counts[course._id] = data.total || 0;
+          } else {
+            counts[course._id] = 0;
+          }
+        } catch (error) {
+          console.error(`Error fetching enrollment count for course ${course._id}:`, error);
+          counts[course._id] = 0;
+        }
+      });
+      
+      await Promise.all(promises);
+      setEnrollmentCounts(counts);
+    } catch (error) {
+      console.error('Error fetching enrollment counts:', error);
+    }
+  };
+
+  const handleViewEnrollments = async (courseId: string, courseName: string) => {
+    setSelectedCourseId(courseId);
+    setSelectedCourseName(courseName);
+    setShowEnrollmentModal(true);
+    setLoadingEnrollments(true);
+    
+    try {
+      const response = await fetch(`/api/enrollments/course/${courseId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setEnrollments(data.enrollments || []);
+      } else {
+        console.error('Error fetching enrollments:', response.statusText);
+        setEnrollments([]);
+      }
+    } catch (error) {
+      console.error('Error fetching enrollments:', error);
+      setEnrollments([]);
+    } finally {
+      setLoadingEnrollments(false);
+    }
+  };
+
+  const handleCloseEnrollmentModal = () => {
+    setShowEnrollmentModal(false);
+    setSelectedCourseId(null);
+    setSelectedCourseName('');
+    setEnrollments([]);
   };
 
   const handleEdit = (course: Course) => {
@@ -701,7 +793,7 @@ export default function AdminCoursesPage() {
                           return (
                             <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {column.render 
-                                ? column.render(value) 
+                                ? column.render(value, course) 
                                 : Array.isArray(value) 
                                   ? `${value.length} รายการ` 
                                   : value}
@@ -805,6 +897,125 @@ export default function AdminCoursesPage() {
             }}
             isSubmitting={isUpdating}
           />
+        )}
+
+        {/* Enrollment Modal */}
+        {showEnrollmentModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleCloseEnrollmentModal}>
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">รายชื่อผู้ลงทะเบียน</h2>
+                  <p className="text-sm text-gray-600 mt-1">หลักสูตร: {selectedCourseName}</p>
+                </div>
+                <button
+                  onClick={handleCloseEnrollmentModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+
+              {loadingEnrollments ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : enrollments.length === 0 ? (
+                <div className="text-center py-12">
+                  <FaUsers className="mx-auto text-gray-400 mb-4" size={48} />
+                  <p className="text-gray-500 text-lg">ยังไม่มีผู้ลงทะเบียนในหลักสูตรนี้</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600">
+                      ทั้งหมด <span className="font-semibold text-gray-900">{enrollments.length}</span> คน
+                    </p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ลำดับ
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ชื่อ-นามสกุล
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            สถานะ
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            วันที่ลงทะเบียน
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {enrollments.map((enrollment: any, index: number) => {
+                          const student = enrollment.studentId;
+                          const statusColors: Record<string, string> = {
+                            pending: 'bg-yellow-100 text-yellow-800',
+                            confirmed: 'bg-green-100 text-green-800',
+                            cancelled: 'bg-red-100 text-red-800',
+                            completed: 'bg-blue-100 text-blue-800',
+                          };
+                          const statusLabels: Record<string, string> = {
+                            pending: 'รอดำเนินการ',
+                            confirmed: 'ยืนยันแล้ว',
+                            cancelled: 'ยกเลิก',
+                            completed: 'เสร็จสิ้น',
+                          };
+                          return (
+                            <tr key={enrollment._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {index + 1}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  {student?.photo ? (
+                                    <img
+                                      src={student.photo}
+                                      alt={student?.name || ''}
+                                      className="h-10 w-10 rounded-full mr-3 object-cover"
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
+                                      <FaUsers className="text-gray-600" size={20} />
+                                    </div>
+                                  )}
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {student?.name || '-'}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    statusColors[enrollment.status] || 'bg-gray-100 text-gray-800'
+                                  }`}
+                                >
+                                  {statusLabels[enrollment.status] || enrollment.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {enrollment.enrolledAt
+                                  ? new Date(enrollment.enrolledAt).toLocaleDateString('th-TH', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })
+                                  : '-'}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </AdminLayout>
