@@ -24,8 +24,6 @@ interface Course {
   description: string;
   category: string;
   level: string;
-  sectionId?: string | { _id: string; name: string };
-  categoryId?: string | { _id: string; name: string };
   price: number;
   schedule: string;
   image: string;
@@ -119,10 +117,8 @@ export default function HomePage() {
           });
           
           const sectionCoursesList = coursesData.filter((course: Course) => {
-            const courseSectionId = typeof course.sectionId === 'string' ? course.sectionId : course.sectionId?._id;
-            if (courseSectionId === section._id) return true;
-            const courseCategoryId = typeof course.categoryId === 'string' ? course.categoryId : course.categoryId?._id;
-            return sectionCats.some((cat: Category) => cat._id === courseCategoryId);
+            if (course.sectionId === section._id) return true;
+            return sectionCats.some((cat: Category) => cat._id === course.categoryId);
           });
           
           sectionCoursesMap[section._id] = sectionCoursesList.slice(0, 6); // Limit to 6 courses per section

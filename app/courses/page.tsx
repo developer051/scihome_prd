@@ -99,75 +99,69 @@ export default function CoursesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-right mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">หลักสูตรทั้งหมด</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent mb-4">หลักสูตรทั้งหมด</h1>
           <p className="text-xl text-gray-600">
             เลือกหลักสูตรที่เหมาะสมกับความต้องการของคุณ
-          </p>
-        </div>
-
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            พบ {filteredCourses.length} หลักสูตร
-            {(searchTerm || selectedSection) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
           </p>
         </div>
 
         {/* Main Content: Filters Sidebar + Courses Grid */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
-          <div className="lg:w-80 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <FaFilter className="text-blue-600" />
-                ตัวกรอง
-              </h2>
-
-              <div className="space-y-6">
+          <div className="lg:w-56 flex-shrink-0">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 sticky top-6">
+              <div className="space-y-3">
                 {/* Search */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ค้นหา
-                  </label>
-                  <div className="relative">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <div className="relative group">
+                    <FaSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors text-xs" />
                     <input
                       type="text"
                       placeholder="ค้นหาหลักสูตร..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
                     />
                   </div>
                 </div>
 
                 {/* Section Filter */}
                 <section>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     หมวดหมู่
                   </label>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <button
                       onClick={() => setSelectedSection('')}
-                      className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                      className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
                         selectedSection === ''
-                          ? 'bg-blue-100 text-blue-700 font-medium'
-                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
+                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-200'
                       }`}
                     >
-                      ทุกหมวดหมู่
+                      <span className="flex items-center gap-1.5">
+                        {selectedSection === '' && (
+                          <span className="w-1 h-1 bg-white rounded-full"></span>
+                        )}
+                        ทุกหมวดหมู่
+                      </span>
                     </button>
                     {sections.map((section) => (
                       <button
                         key={section._id}
                         onClick={() => setSelectedSection(section._id)}
-                        className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                        className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
                           selectedSection === section._id
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-200'
                         }`}
                       >
-                        {section.name}
+                        <span className="flex items-center gap-1.5">
+                          {selectedSection === section._id && (
+                            <span className="w-1 h-1 bg-white rounded-full"></span>
+                          )}
+                          {section.name}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -180,7 +174,7 @@ export default function CoursesPage() {
                       setSearchTerm('');
                       setSelectedSection('');
                     }}
-                    className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
+                    className="w-full px-2.5 py-1.5 text-xs bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                   >
                     ล้างตัวกรอง
                   </button>

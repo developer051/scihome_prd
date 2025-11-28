@@ -135,10 +135,10 @@ export default function MockExamPage() {
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5">
           <div className="flex justify-end">
             <div className="max-w-3xl text-right">
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up animation-delay-200">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 leading-tight animate-fade-in-up animation-delay-200">
                 Mock Exam
                 <br />
                 <span className="text-blue-600 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent animate-fade-in-up animation-delay-400">
@@ -146,7 +146,7 @@ export default function MockExamPage() {
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed animate-fade-in-up animation-delay-600">
+              <p className="text-base md:text-lg text-gray-600 mb-0 leading-relaxed animate-fade-in-up animation-delay-600">
                 เลือกข้อสอบที่ต้องการทำเพื่อทดสอบความรู้ของคุณ
                 <br />
                 เตรียมความพร้อมสำหรับการสอบจริง
@@ -157,96 +157,89 @@ export default function MockExamPage() {
       </section>
 
       {/* Exams Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="pt-6 pb-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Main Content: Filters Sidebar + Exams Grid */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Categories Sidebar */}
+            <div className="lg:w-56 flex-shrink-0">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 sticky top-6">
+                <div className="space-y-3">
+                  {/* Category Filter */}
+                  <section>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      วิชา
+                    </label>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setSelectedCategory('')}
+                        className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
+                          selectedCategory === ''
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-200'
+                        }`}
+                      >
+                        <span className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            {selectedCategory === '' && (
+                              <span className="w-1 h-1 bg-white rounded-full"></span>
+                            )}
+                            ทุกหมวดหมู่
+                          </span>
+                          <span className="font-bold text-xs">{exams.length}</span>
+                        </span>
+                      </button>
+                      {categories.map((category) => {
+                        const count = getCategoryCount(category);
+                        const hasExams = count > 0;
+                        const isSelected = selectedCategory === category;
+                        
+                        return (
+                          <button
+                            key={category}
+                            onClick={() => setSelectedCategory(category)}
+                            className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
+                              isSelected
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
+                                : hasExams
+                                ? 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-200'
+                                : 'bg-gray-50 text-gray-400 border border-gray-200 opacity-60 cursor-not-allowed'
+                            }`}
+                            disabled={!hasExams}
+                          >
+                            <span className="flex items-center justify-between">
+                              <span className="flex items-center gap-1.5">
+                                {isSelected && (
+                                  <span className="w-1 h-1 bg-white rounded-full"></span>
+                                )}
+                                {category}
+                              </span>
+                              <span className="font-bold text-xs">{count}</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
 
-          {/* Categories Grid */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">เลือกตามวิชา</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {/* All Categories Button */}
-              <button
-                onClick={() => setSelectedCategory('')}
-                className={`bg-white rounded-lg border-2 p-3 text-left transition-all duration-200 category-card-glow ${
-                  selectedCategory === ''
-                    ? 'border-blue-600 bg-blue-50 selected'
-                    : 'border-gray-200 hover:border-blue-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-600">ทั้งหมด</span>
-                  <span className={`text-base font-bold ${
-                    selectedCategory === '' ? 'text-blue-600' : 'text-gray-900'
-                  }`}>
-                    {exams.length}
-                  </span>
+                  {/* Clear Filters */}
+                  {(searchTerm || selectedCategory) && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('');
+                      }}
+                      className="w-full px-2.5 py-1.5 text-xs bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+                    >
+                      ล้างตัวกรอง
+                    </button>
+                  )}
                 </div>
-                <div className="text-[10px] text-gray-500">ข้อสอบทั้งหมด</div>
-              </button>
-
-              {/* Category Cards */}
-              {categories.map((category) => {
-                const count = getCategoryCount(category);
-                const hasExams = count > 0;
-                const isSelected = selectedCategory === category;
-                
-                return (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`bg-white rounded-lg border-2 p-3 text-left transition-all duration-200 category-card-glow ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50 selected'
-                        : hasExams
-                        ? 'border-gray-200 hover:border-blue-300'
-                        : 'border-gray-100 bg-gray-50 opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-xs font-medium ${
-                        isSelected ? 'text-blue-600' : hasExams ? 'text-gray-900' : 'text-gray-400'
-                      }`}>
-                        {category}
-                      </span>
-                      <span className={`text-base font-bold ${
-                        isSelected ? 'text-blue-600' : hasExams ? 'text-gray-900' : 'text-gray-400'
-                      }`}>
-                        {count}
-                      </span>
-                    </div>
-                    <div className={`text-[10px] ${
-                      isSelected ? 'text-blue-600' : hasExams ? 'text-gray-500' : 'text-gray-400'
-                    }`}>
-                      {hasExams ? 'ข้อสอบ' : 'ยังไม่มีข้อสอบ'}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          {selectedCategory && (
-            <div className="mb-6">
-              <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="ค้นหาข้อสอบในหมวดหมู่นี้..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                />
               </div>
             </div>
-          )}
 
-          <div className="mb-4 text-sm text-gray-600">
-            พบ {filteredExams.length} ข้อสอบ
-            {(searchTerm || selectedCategory) && ` จากทั้งหมด ${exams.length} ข้อสอบ`}
-          </div>
-
-          {/* Exams Grid */}
+            {/* Exams Grid */}
+            <div className="flex-1">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, index) => (
@@ -366,6 +359,8 @@ export default function MockExamPage() {
               </button>
             </div>
           )}
+            </div>
+          </div>
         </div>
       </section>
     </div>
