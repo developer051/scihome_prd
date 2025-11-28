@@ -96,7 +96,8 @@ export default function AdminCoursesPage() {
     {
       key: 'enrollmentCount',
       label: 'ผู้ลงทะเบียน',
-      render: (value: any, course: Course) => {
+      render: (value: any, course?: Course) => {
+        if (!course) return '-';
         const count = enrollmentCounts[course._id] || 0;
         return (
           <div className="flex items-center gap-2">
@@ -796,7 +797,9 @@ export default function AdminCoursesPage() {
                                 ? column.render(value, course) 
                                 : Array.isArray(value) 
                                   ? `${value.length} รายการ` 
-                                  : value}
+                                  : typeof value === 'object' && value !== null
+                                    ? JSON.stringify(value)
+                                    : String(value ?? '')}
                             </td>
                           );
                         })}
@@ -1191,7 +1194,7 @@ function CourseForm({ course, onSubmit, onClose }: {
               </label>
               <select
                 name="sectionId"
-                value={formData.sectionId}
+                value={typeof formData.sectionId === 'string' ? formData.sectionId : ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={loadingData}
@@ -1212,7 +1215,7 @@ function CourseForm({ course, onSubmit, onClose }: {
             </label>
             <select
               name="categoryId"
-              value={formData.categoryId}
+              value={typeof formData.categoryId === 'string' ? formData.categoryId : ''}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={loadingData || !formData.sectionId}

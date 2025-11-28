@@ -4,7 +4,7 @@ import Section from '@/models/Section';
 import Category from '@/models/Category';
 import Course from '@/models/Course';
 
-export async function seedSectionsCategories() {
+async function seedSectionsCategories() {
   await connectDB();
 
   // Check if sections already exist

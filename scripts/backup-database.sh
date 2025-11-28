@@ -99,3 +99,4 @@ echo "ขนาด: $(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1)"
 echo ""
 echo -e "${GREEN}เสร็จสิ้น!${NC}"
 
+

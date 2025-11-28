@@ -35,17 +35,6 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('');
-
-  const levels = [
-    'ม.1',
-    'ม.2',
-    'ม.3',
-    'ม.4',
-    'ม.5',
-    'ม.6',
-    'เตรียมสอบเข้า',
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,9 +49,23 @@ export default function CoursesPage() {
           sectionsRes.json(),
         ]);
 
-        setCourses(coursesData);
-        setFilteredCourses(coursesData);
-        setSections(sectionsData.sort((a: Section, b: Section) => a.order - b.order));
+        const sortedSections = sectionsData.sort((a: Section, b: Section) => a.order - b.order);
+        setSections(sortedSections);
+
+        // Map courses to include sectionName
+        const coursesWithSectionName = coursesData.map((course: Course) => {
+          const section = sortedSections.find((s: Section) => {
+            const courseSectionId = typeof course.sectionId === 'string' ? course.sectionId : course.sectionId?._id;
+            return s._id === courseSectionId;
+          });
+          return {
+            ...course,
+            sectionName: section?.name,
+          };
+        });
+
+        setCourses(coursesWithSectionName);
+        setFilteredCourses(coursesWithSectionName);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -88,18 +91,14 @@ export default function CoursesPage() {
       filtered = filtered.filter((course) => course.sectionId === selectedSection);
     }
 
-    if (selectedLevel) {
-      filtered = filtered.filter((course) => course.level === selectedLevel);
-    }
-
     setFilteredCourses(filtered);
-  }, [courses, searchTerm, selectedSection, selectedLevel]);
+  }, [courses, searchTerm, selectedSection]);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-right mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">หลักสูตรทั้งหมด</h1>
           <p className="text-xl text-gray-600">
             เลือกหลักสูตรที่เหมาะสมกับความต้องการของคุณ
@@ -110,7 +109,7 @@ export default function CoursesPage() {
         <div className="mb-6">
           <p className="text-gray-600">
             พบ {filteredCourses.length} หลักสูตร
-            {(searchTerm || selectedSection || selectedLevel) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
+            {(searchTerm || selectedSection) && ' จากทั้งหมด ' + courses.length + ' หลักสูตร'}
           </p>
         </div>
 
@@ -174,32 +173,12 @@ export default function CoursesPage() {
                   </div>
                 </section>
 
-                {/* Level Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ระดับชั้น
-                  </label>
-                  <select
-                    value={selectedLevel}
-                    onChange={(e) => setSelectedLevel(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">ทุกระดับชั้น</option>
-                    {levels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 {/* Clear Filters */}
-                {(searchTerm || selectedSection || selectedLevel) && (
+                {(searchTerm || selectedSection) && (
                   <button
                     onClick={() => {
                       setSearchTerm('');
                       setSelectedSection('');
-                      setSelectedLevel('');
                     }}
                     className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
                   >
@@ -235,7 +214,6 @@ export default function CoursesPage() {
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedSection('');
-                    setSelectedLevel('');
                   }}
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
                 >

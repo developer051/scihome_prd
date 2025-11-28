@@ -13,15 +13,12 @@ export async function GET() {
     // If no sections exist, seed them
     if (sections.length === 0) {
       try {
-        // Import and call seed function directly
-        const { seedSectionsCategories } = await import('../seed-sections-categories/route');
-        await seedSectionsCategories();
+        await seedData();
         sections = await Section.find({}).sort({ order: 1 });
       } catch (seedError) {
         console.error('Error seeding sections:', seedError);
-        // Fallback: try to seed manually
-        await seedData();
-        sections = await Section.find({}).sort({ order: 1 });
+        // Return empty array if seeding fails
+        sections = [];
       }
     }
     

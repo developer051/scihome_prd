@@ -15,6 +15,7 @@ interface CourseCardProps {
     maxStudents: number;
     isOnline: boolean;
     isOnsite: boolean;
+    sectionName?: string;
   };
 }
 
@@ -28,19 +29,14 @@ export default function CourseCard({ course }: CourseCardProps) {
           className="w-full h-48 object-cover bg-gray-100 transition-transform duration-300 hover:scale-110"
         />
         <div className="absolute top-4 left-4">
-          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {course.category}
-          </span>
-        </div>
-        <div className="absolute top-4 right-4">
-          <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {course.level}
+          <span className="bg-blue-600/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg border border-white/20">
+            {course.sectionName || course.category}
           </span>
         </div>
       </div>
 
       <div className="p-6 flex flex-col h-full">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {course.name}
         </h3>
         
