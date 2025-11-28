@@ -40,7 +40,7 @@ export default function CourseCard({ course }: CourseCardProps) {
           {course.name}
         </h3>
         
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+        <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">
           {course.description}
         </p>
 

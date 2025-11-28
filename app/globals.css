@@ -526,7 +526,7 @@
   }
   
   .max-width-container {
-    @apply max-w-7xl mx-auto;
+    @apply max-w-8xl mx-auto;
   }
 
   /* Responsive text sizes */

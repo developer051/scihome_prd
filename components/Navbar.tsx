@@ -2,16 +2,18 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { FaBars, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { FaBars, FaTimes, FaChevronDown, FaUserCircle } from 'react-icons/fa';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const accountDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // ตรวจสอบสถานะการล็อกอินจาก localStorage
@@ -19,6 +21,13 @@ export default function Navbar() {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(loggedIn);
     }
+    
+    // Cleanup timeout เมื่อ component unmount
+    return () => {
+      if (accountDropdownTimeoutRef.current) {
+        clearTimeout(accountDropdownTimeoutRef.current);
+      }
+    };
   }, [pathname]); // อัปเดตเมื่อ pathname เปลี่ยน
 
   const handleLogout = () => {
@@ -52,11 +61,12 @@ export default function Navbar() {
     login: `${buttonBase} bg-gradient-to-r from-blue-500/75 via-sky-500/70 to-cyan-500/70 hover:from-blue-500/95 hover:via-sky-500/90 hover:to-cyan-500/90 focus:ring-blue-200 text-white`,
     register: `${buttonBase} bg-gradient-to-r from-emerald-500/75 via-green-500/70 to-lime-500/70 hover:from-emerald-500/95 hover:via-green-500/90 hover:to-lime-500/90 focus:ring-emerald-200 text-white`,
     admin: `${buttonBase} bg-gradient-to-r from-slate-700/80 via-slate-800/70 to-gray-900/70 hover:from-slate-700/95 hover:via-gray-900/90 hover:to-black/90 focus:ring-slate-200 text-white`,
+    account: `${buttonBase} bg-gradient-to-r from-indigo-500/80 via-blue-500/70 to-purple-500/70 hover:from-indigo-500/95 hover:via-blue-500/90 hover:to-purple-500/90 focus:ring-indigo-200 text-white`,
   };
 
   return (
     <nav className="bg-white/98 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-200/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <Link 
@@ -134,47 +144,97 @@ export default function Navbar() {
               )}
             </div>
 
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className={`ml-3 ${buttonVariants.dashboard} ${
-                    pathname === '/dashboard'
-                      ? 'shadow-purple-500/40'
-                      : 'shadow-purple-500/20'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className={`ml-3 ${buttonVariants.logout} shadow-rose-500/20`}
-                >
-                  ออกจากระบบ
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={`ml-3 ${buttonVariants.login} shadow-sky-500/20`}
+            {/* My Account Dropdown */}
+            <div 
+              className="relative ml-3"
+              onMouseEnter={() => {
+                if (accountDropdownTimeoutRef.current) {
+                  clearTimeout(accountDropdownTimeoutRef.current);
+                  accountDropdownTimeoutRef.current = null;
+                }
+                setIsAccountDropdownOpen(true);
+              }}
+              onMouseLeave={() => {
+                accountDropdownTimeoutRef.current = setTimeout(() => {
+                  setIsAccountDropdownOpen(false);
+                }, 300); // หน่วงเวลา 300ms ก่อนปิด dropdown
+              }}
+            >
+              <button
+                className={`${buttonVariants.account} shadow-indigo-500/20 flex items-center space-x-2`}
+                onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
               >
-                Login
-              </Link>
-            )}
-
-            <Link
-              href="/register"
-              className={`ml-3 ${buttonVariants.register} shadow-emerald-500/20`}
-            >
-              Register
-            </Link>
-
-            <Link
-              href="/admin"
-              className={`ml-3 ${buttonVariants.admin} shadow-slate-800/30`}
-            >
-              Admin
-            </Link>
+                <FaUserCircle className="text-base" />
+                <span>My account</span>
+                <FaChevronDown className={`text-xs transition-all duration-300 ${isAccountDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isAccountDropdownOpen && (
+                <div 
+                  className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200/60 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                  onMouseEnter={() => {
+                    if (accountDropdownTimeoutRef.current) {
+                      clearTimeout(accountDropdownTimeoutRef.current);
+                      accountDropdownTimeoutRef.current = null;
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    accountDropdownTimeoutRef.current = setTimeout(() => {
+                      setIsAccountDropdownOpen(false);
+                    }, 300);
+                  }}
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    {isLoggedIn ? (
+                      <>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                          className={`${buttonVariants.dashboard} ${
+                            pathname === '/dashboard'
+                              ? 'shadow-purple-500/40'
+                              : 'shadow-purple-500/20'
+                          }`}
+                        >
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setIsAccountDropdownOpen(false);
+                            handleLogout();
+                          }}
+                          className={`${buttonVariants.logout} shadow-rose-500/20`}
+                        >
+                          ออกจากระบบ
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href="/login"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                        className={`${buttonVariants.login} shadow-sky-500/20`}
+                      >
+                        Login
+                      </Link>
+                    )}
+                    <Link
+                      href="/register"
+                      onClick={() => setIsAccountDropdownOpen(false)}
+                      className={`${buttonVariants.register} shadow-emerald-500/20`}
+                    >
+                      Register
+                    </Link>
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsAccountDropdownOpen(false)}
+                      className={`${buttonVariants.admin} shadow-slate-800/30`}
+                    >
+                      Admin
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -257,54 +317,88 @@ export default function Navbar() {
               )}
             </div>
 
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className={`block mt-3 mx-2 text-base ${buttonVariants.dashboard} ${
-                    pathname === '/dashboard'
-                      ? 'shadow-purple-500/40'
-                      : 'shadow-purple-500/20'
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    handleLogout();
-                  }}
-                  className={`w-full mt-3 mx-2 text-base ${buttonVariants.logout} shadow-rose-500/20`}
-                >
-                  ออกจากระบบ
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={`block mt-3 mx-2 text-base ${buttonVariants.login} shadow-sky-500/20`}
-                onClick={() => setIsOpen(false)}
+            {/* Mobile My Account Dropdown */}
+            <div className="mt-3">
+              <button
+                onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-lg font-medium transition-all duration-200 ${
+                  isAccountDropdownOpen
+                    ? 'text-indigo-600 bg-indigo-50/80 border-l-4 border-indigo-600 shadow-sm'
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50/80'
+                }`}
               >
-                Login
-              </Link>
-            )}
-
-            <Link
-              href="/register"
-              className={`block mt-3 mx-2 text-base ${buttonVariants.register} shadow-emerald-500/20`}
-              onClick={() => setIsOpen(false)}
-            >
-              Register
-            </Link>
-
-            <Link
-              href="/admin"
-              className={`block mt-3 mx-2 text-base ${buttonVariants.admin} shadow-slate-900/30`}
-              onClick={() => setIsOpen(false)}
-            >
-              Admin
-            </Link>
+                <div className="flex items-center space-x-2">
+                  <FaUserCircle className="text-xl" />
+                  <span>My account</span>
+                </div>
+                <FaChevronDown className={`text-xs transition-all duration-300 ${isAccountDropdownOpen ? 'rotate-180 text-indigo-600' : ''}`} />
+              </button>
+              {isAccountDropdownOpen && (
+                <div className="mt-1.5 ml-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="grid grid-cols-2 gap-2">
+                    {isLoggedIn ? (
+                      <>
+                        <Link
+                          href="/dashboard"
+                          className={`text-base ${buttonVariants.dashboard} ${
+                            pathname === '/dashboard'
+                              ? 'shadow-purple-500/40'
+                              : 'shadow-purple-500/20'
+                          }`}
+                          onClick={() => {
+                            setIsOpen(false);
+                            setIsAccountDropdownOpen(false);
+                          }}
+                        >
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setIsOpen(false);
+                            setIsAccountDropdownOpen(false);
+                            handleLogout();
+                          }}
+                          className={`text-base ${buttonVariants.logout} shadow-rose-500/20`}
+                        >
+                          ออกจากระบบ
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href="/login"
+                        className={`text-base ${buttonVariants.login} shadow-sky-500/20`}
+                        onClick={() => {
+                          setIsOpen(false);
+                          setIsAccountDropdownOpen(false);
+                        }}
+                      >
+                        Login
+                      </Link>
+                    )}
+                    <Link
+                      href="/register"
+                      className={`text-base ${buttonVariants.register} shadow-emerald-500/20`}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsAccountDropdownOpen(false);
+                      }}
+                    >
+                      Register
+                    </Link>
+                    <Link
+                      href="/admin"
+                      className={`text-base ${buttonVariants.admin} shadow-slate-900/30`}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsAccountDropdownOpen(false);
+                      }}
+                    >
+                      Admin
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

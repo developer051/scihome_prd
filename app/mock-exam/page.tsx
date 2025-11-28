@@ -135,7 +135,7 @@ export default function MockExamPage() {
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5">
+        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5">
           <div className="flex justify-end">
             <div className="max-w-3xl text-right">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 leading-tight animate-fade-in-up animation-delay-200">
@@ -158,7 +158,7 @@ export default function MockExamPage() {
 
       {/* Exams Section */}
       <section className="pt-6 pb-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Content: Filters Sidebar + Exams Grid */}
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Categories Sidebar */}
