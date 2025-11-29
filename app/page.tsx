@@ -202,7 +202,7 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         </div>
         
-        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-40 lg:py-48">
+        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left side - Content */}
             <div>
@@ -251,11 +251,11 @@ export default function HomePage() {
       </section>
 
       {/* Features Section - Enhanced Design */}
-      <section className="py-8 bg-gradient-to-b from-white via-blue-50/30 to-white relative overflow-hidden -mt-8">
+      <section className="py-4 bg-gradient-to-b from-white via-gray-50/30 to-white relative overflow-hidden -mt-8">
         {/* Decorative background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-10 w-72 h-72 bg-blue-100/30 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 right-10 w-72 h-72 bg-gray-100/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-10 w-72 h-72 bg-gray-200/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -265,18 +265,18 @@ export default function HomePage() {
               return (
                 <div
                   key={index}
-                  className="group relative bg-white rounded-xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-blue-300"
+                  className="group relative bg-white rounded-xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-gray-300"
                 >
                   {/* Gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 group-hover:from-blue-50/50 group-hover:to-blue-100/30 rounded-xl transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-50/0 to-gray-100/0 group-hover:from-gray-50/50 group-hover:to-gray-100/30 rounded-xl transition-all duration-300"></div>
                   
                   <div className="relative z-10">
                     {/* Icon with animated background */}
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-blue-500/30">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-gray-500/30">
                       <Icon className="text-white text-xl" />
                     </div>
                     
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 text-center group-hover:text-blue-600 transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 text-center group-hover:text-gray-600 transition-colors duration-300">
                       {feature.title}
                     </h3>
                     
