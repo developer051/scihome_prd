@@ -89,10 +89,10 @@ export default function RegistrationForm({ courseName, courseId }: RegistrationF
         return;
       }
 
-      // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      // ตรวจสอบขนาดไฟล์ (สูงสุด 7MB)
+      const maxSize = 7 * 1024 * 1024; // 7MB
       if (file.size > maxSize) {
-        setUploadError('ขนาดไฟล์ต้องไม่เกิน 5MB');
+        setUploadError('ขนาดไฟล์ต้องไม่เกิน 7MB');
         return;
       }
 

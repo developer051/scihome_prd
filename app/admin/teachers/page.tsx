@@ -277,9 +277,9 @@ function TeacherForm({ teacher, onSubmit, onClose }: {
       return;
     }
 
-    // ตรวจสอบขนาดไฟล์ (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('ขนาดไฟล์ต้องไม่เกิน 5MB');
+    // ตรวจสอบขนาดไฟล์ (7MB)
+    if (file.size > 7 * 1024 * 1024) {
+      alert('ขนาดไฟล์ต้องไม่เกิน 7MB');
       return;
     }
 

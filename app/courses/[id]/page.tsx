@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { FaClock, FaUsers, FaMapMarkerAlt, FaLaptop, FaArrowLeft, FaBookOpen, FaYoutube, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface SubLesson {
   title: string;
@@ -37,6 +38,21 @@ interface Course {
   lessons?: Lesson[];
 }
 
+// Helper function to get image URL
+function getImageUrl(image: string | undefined | null): string {
+  if (!image) {
+    return '/images/course-default.jpg';
+  }
+  
+  // ถ้าเป็น full URL หรือ relative path ที่เริ่มด้วย / ให้ใช้ตามเดิม
+  if (image.startsWith('http://') || image.startsWith('https://') || image.startsWith('/')) {
+    return image;
+  }
+  
+  // ถ้าเป็น image ID ให้ใช้ API endpoint
+  return `/api/images/${image}`;
+}
+
 export default function CourseDetailPage() {
   const params = useParams();
   const [course, setCourse] = useState<Course | null>(null);
@@ -45,6 +61,7 @@ export default function CourseDetailPage() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [enrollmentStatus, setEnrollmentStatus] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [videoModal, setVideoModal] = useState<{ isOpen: boolean; videoId: string | null; title: string }>({
     isOpen: false,
     videoId: null,
@@ -224,6 +241,8 @@ export default function CourseDetailPage() {
     );
   }
 
+  const imageUrl = imageError ? '/images/course-default.jpg' : getImageUrl(course.image);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -238,13 +257,19 @@ export default function CourseDetailPage() {
 
         {/* Course Header */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-          <div className="relative">
-            <img
-              src={course.image}
+          <div className="relative h-64 md:h-96 overflow-hidden bg-white">
+            <Image
+              src={imageUrl}
               alt={course.name}
-              className="w-full h-64 md:h-96 object-cover bg-gray-100"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 1200px"
+              className="object-contain object-right"
+              quality={85}
+              onError={() => setImageError(true)}
+              unoptimized={imageUrl.startsWith('/api/images/')}
+              priority
             />
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-4 left-4 z-10">
               <span className="bg-blue-600/75 text-white px-3 py-1 rounded-full text-sm font-medium">
                 {course.name}
               </span>

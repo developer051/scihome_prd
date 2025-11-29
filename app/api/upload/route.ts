@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 });
     }
 
-    // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // ตรวจสอบขนาดไฟล์ (สูงสุด 7MB)
+    const maxSize = 7 * 1024 * 1024; // 7MB
     if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File size exceeds 5MB limit' }, { status: 400 });
+      return NextResponse.json({ error: 'File size exceeds 7MB limit' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
