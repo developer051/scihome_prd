@@ -45,7 +45,6 @@ export default function AdminExamsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const columns = [
     {
@@ -170,74 +169,6 @@ export default function AdminExamsPage() {
     setEditingExam(null);
   };
 
-  const handleSeedPhysics = async () => {
-    if (confirm('คุณต้องการสร้างข้อสอบ Physics 10 ข้อ (เวลา 15 นาที) หรือไม่?')) {
-      setIsSeeding(true);
-      try {
-        const response = await fetch('/api/exams/seed/physics', {
-          method: 'POST',
-        });
-        const data = await response.json();
-        if (response.ok) {
-          alert('สร้างข้อสอบ Physics สำเร็จแล้ว!');
-          fetchExams();
-        } else {
-          alert(`เกิดข้อผิดพลาด: ${data.error || 'ไม่ทราบสาเหตุ'}`);
-        }
-      } catch (error) {
-        alert('เกิดข้อผิดพลาดในการสร้างข้อสอบ');
-        console.error('Error seeding physics exam:', error);
-      } finally {
-        setIsSeeding(false);
-      }
-    }
-  };
-
-  const handleSeedBiology = async () => {
-    if (confirm('คุณต้องการสร้างข้อสอบชีววิทยา ม.6 เข้มข้น 10 ข้อ (เวลา 15 นาที) หรือไม่?')) {
-      setIsSeeding(true);
-      try {
-        const response = await fetch('/api/exams/seed/biology', {
-          method: 'POST',
-        });
-        const data = await response.json();
-        if (response.ok) {
-          alert('สร้างข้อสอบชีววิทยา ม.6 เข้มข้น สำเร็จแล้ว!');
-          fetchExams();
-        } else {
-          alert(`เกิดข้อผิดพลาด: ${data.error || 'ไม่ทราบสาเหตุ'}`);
-        }
-      } catch (error) {
-        alert('เกิดข้อผิดพลาดในการสร้างข้อสอบ');
-        console.error('Error seeding biology exam:', error);
-      } finally {
-        setIsSeeding(false);
-      }
-    }
-  };
-
-  const handleSeedChemistry = async () => {
-    if (confirm('คุณต้องการสร้าง Mock Exam วิชาเคมี 10 ข้อ (เวลา 10 นาที / 10 คะแนน) หรือไม่?')) {
-      setIsSeeding(true);
-      try {
-        const response = await fetch('/api/exams/seed/chemistry', {
-          method: 'POST',
-        });
-        const data = await response.json();
-        if (response.ok) {
-          alert('สร้าง Mock Exam วิชาเคมี สำเร็จแล้ว!');
-          fetchExams();
-        } else {
-          alert(`เกิดข้อผิดพลาด: ${data.error || 'ไม่ทราบสาเหตุ'}`);
-        }
-      } catch (error) {
-        alert('เกิดข้อผิดพลาดในการสร้างข้อสอบ');
-        console.error('Error seeding chemistry exam:', error);
-      } finally {
-        setIsSeeding(false);
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -256,27 +187,6 @@ export default function AdminExamsPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">จัดการข้อสอบ</h1>
           <div className="flex gap-3">
-            <button
-              onClick={handleSeedPhysics}
-              disabled={isSeeding}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors inline-flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isSeeding ? 'กำลังสร้าง...' : 'Seed ข้อสอบ Physics'}
-            </button>
-            <button
-              onClick={handleSeedBiology}
-              disabled={isSeeding}
-              className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors inline-flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isSeeding ? 'กำลังสร้าง...' : 'Seed ข้อสอบชีววิทยา ม.6'}
-            </button>
-            <button
-              onClick={handleSeedChemistry}
-              disabled={isSeeding}
-              className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors inline-flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isSeeding ? 'กำลังสร้าง...' : 'Seed Mock Exam เคมี'}
-            </button>
             <button
               onClick={() => setShowForm(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors inline-flex items-center"

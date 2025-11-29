@@ -9,7 +9,18 @@ export async function GET(
   try {
     await connectDB();
     const exam = await Exam.findById(params.id)
-      .populate('courseId', 'name category level');
+      .populate({
+        path: 'courseId',
+        select: 'name category level sectionId categoryId',
+        populate: [
+          { path: 'sectionId', select: 'name' },
+          { 
+            path: 'categoryId', 
+            select: 'name sectionId',
+            populate: { path: 'sectionId', select: 'name' }
+          }
+        ]
+      });
     
     if (!exam) {
       return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
@@ -39,7 +50,18 @@ export async function PUT(
       params.id,
       body,
       { new: true, runValidators: true }
-    ).populate('courseId', 'name category level');
+    ).populate({
+      path: 'courseId',
+      select: 'name category level sectionId categoryId',
+      populate: [
+        { path: 'sectionId', select: 'name' },
+        { 
+          path: 'categoryId', 
+          select: 'name sectionId',
+          populate: { path: 'sectionId', select: 'name' }
+        }
+      ]
+    });
     
     if (!exam) {
       return NextResponse.json({ error: 'Exam not found' }, { status: 404 });

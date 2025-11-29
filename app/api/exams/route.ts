@@ -6,7 +6,18 @@ export async function GET() {
   try {
     await connectDB();
     const exams = await Exam.find({})
-      .populate('courseId', 'name category level')
+      .populate({
+        path: 'courseId',
+        select: 'name category level sectionId categoryId',
+        populate: [
+          { path: 'sectionId', select: 'name' },
+          { 
+            path: 'categoryId', 
+            select: 'name sectionId',
+            populate: { path: 'sectionId', select: 'name' }
+          }
+        ]
+      })
       .sort({ createdAt: -1 });
     
     return NextResponse.json(exams);
@@ -35,7 +46,18 @@ export async function POST(request: NextRequest) {
     }
 
     const exam = await Exam.create(body);
-    const populatedExam = await Exam.findById(exam._id).populate('courseId', 'name category level');
+    const populatedExam = await Exam.findById(exam._id).populate({
+      path: 'courseId',
+      select: 'name category level sectionId categoryId',
+      populate: [
+        { path: 'sectionId', select: 'name' },
+        { 
+          path: 'categoryId', 
+          select: 'name sectionId',
+          populate: { path: 'sectionId', select: 'name' }
+        }
+      ]
+    });
     
     return NextResponse.json(populatedExam, { status: 201 });
   } catch (error: any) {

@@ -313,12 +313,14 @@ export default function CourseDetailPage() {
 
             {/* Course Curriculum */}
             {course.lessons && course.lessons.length > 0 && (
-              <div id="lessons" className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                  <FaBookOpen className="mr-2 text-blue-600" />
-                  เนื้อหาหลักสูตร
-                </h2>
-                <div className="space-y-4">
+              <div id="lessons" className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md mr-4">
+                    <FaBookOpen className="text-white text-xl" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900">เนื้อหาหลักสูตร</h2>
+                </div>
+                <div className="space-y-3">
                   {course.lessons
                     .sort((a, b) => a.order - b.order)
                     .map((lesson, lessonIndex) => {
@@ -326,25 +328,40 @@ export default function CourseDetailPage() {
                       const hasSubLessons = lesson.subLessons && lesson.subLessons.length > 0;
                       
                       return (
-                        <div key={lessonIndex} className="border border-gray-200 rounded-lg overflow-hidden">
-                          <div className="bg-gray-50 px-4 py-3">
+                        <div 
+                          key={lessonIndex} 
+                          className="group border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300"
+                        >
+                          <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 hover:from-blue-50 hover:to-white transition-all duration-300">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center flex-1">
                                 {hasSubLessons && (
                                   <button
                                     onClick={() => toggleLesson(lessonIndex)}
-                                    className="mr-3 text-gray-500 hover:text-gray-700 transition-colors"
+                                    className="mr-4 text-gray-400 hover:text-blue-600 transition-all duration-200 transform hover:scale-110 flex-shrink-0"
                                   >
                                     {isExpanded ? (
-                                      <FaChevronUp className="text-sm" />
+                                      <FaChevronUp className="text-lg" />
                                     ) : (
-                                      <FaChevronDown className="text-sm" />
+                                      <FaChevronDown className="text-lg" />
                                     )}
                                   </button>
                                 )}
-                                <h3 className="font-semibold text-gray-900">
-                                  บทที่ {lesson.order}: {lesson.title}
-                                </h3>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-700 transition-colors">
+                                    บทที่ {lesson.order}: {lesson.title}
+                                  </h3>
+                                  {lesson.description && (
+                                    <p className="text-sm text-gray-600 line-clamp-1">
+                                      {lesson.description}
+                                    </p>
+                                  )}
+                                  {hasSubLessons && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {lesson.subLessons.length} บทเรียนย่อย
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                               {lesson.youtubeLink && (
                                 <button
@@ -353,55 +370,67 @@ export default function CourseDetailPage() {
                                     videoId: lesson.youtubeLink || null,
                                     title: lesson.title,
                                   })}
-                                  className="ml-3 inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors shadow-sm hover:shadow-md"
+                                  className="ml-4 inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 flex-shrink-0"
                                 >
-                                  <FaYoutube className="mr-1.5" />
+                                  <FaYoutube className="mr-2" />
                                   ดูวิดีโอ
                                 </button>
                               )}
                             </div>
                           </div>
                           {hasSubLessons && isExpanded && (
-                            <div className="p-4 bg-white border-t border-gray-200">
-                              <ul className="space-y-2">
+                            <div className="p-6 bg-gray-50 border-t border-gray-200 animate-in slide-in-from-top-2 duration-300">
+                              <div className="space-y-3">
                                 {lesson.subLessons
                                   .sort((a, b) => a.order - b.order)
                                   .map((subLesson, subIndex) => (
-                                    <li key={subIndex} className="flex items-start">
-                                      <span className="text-blue-600 mr-2 mt-1">•</span>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-gray-800 font-medium">
-                                            {subLesson.title}
-                                          </span>
-                                          {subLesson.youtubeLink && (
-                                            <button
-                                              onClick={() => setVideoModal({
-                                                isOpen: true,
-                                                videoId: subLesson.youtubeLink || null,
-                                                title: subLesson.title,
-                                              })}
-                                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors shadow-sm hover:shadow-md"
-                                            >
-                                              <FaYoutube className="mr-1" />
-                                              ดูวิดีโอ
-                                            </button>
-                                          )}
+                                    <div 
+                                      key={subIndex} 
+                                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all duration-200"
+                                    >
+                                      <div className="flex items-start">
+                                        <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                                          <span className="text-blue-600 text-xs font-bold">{subLesson.order}</span>
                                         </div>
-                                        {subLesson.description && (
-                                          <p className="text-sm text-gray-600 mt-1">
-                                            {subLesson.description}
-                                          </p>
-                                        )}
-                                        {subLesson.duration && (
-                                          <span className="text-xs text-gray-500 ml-2">
-                                            ({subLesson.duration})
-                                          </span>
-                                        )}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-start justify-between gap-3 flex-wrap">
+                                            <div className="flex-1">
+                                              <h4 className="text-gray-900 font-semibold mb-1">
+                                                {subLesson.title}
+                                              </h4>
+                                              {subLesson.description && (
+                                                <p className="text-sm text-gray-600 leading-relaxed">
+                                                  {subLesson.description}
+                                                </p>
+                                              )}
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                              {subLesson.duration && (
+                                                <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md whitespace-nowrap">
+                                                  <FaClock className="mr-1.5 text-gray-500" size={10} />
+                                                  {subLesson.duration}
+                                                </span>
+                                              )}
+                                              {subLesson.youtubeLink && (
+                                                <button
+                                                  onClick={() => setVideoModal({
+                                                    isOpen: true,
+                                                    videoId: subLesson.youtubeLink || null,
+                                                    title: subLesson.title,
+                                                  })}
+                                                  className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 active:scale-100"
+                                                >
+                                                  <FaYoutube className="mr-1.5" />
+                                                  ดูวิดีโอ
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </li>
+                                    </div>
                                   ))}
-                              </ul>
+                              </div>
                             </div>
                           )}
                         </div>

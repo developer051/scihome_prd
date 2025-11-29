@@ -13,6 +13,8 @@ interface Exam {
     name: string;
     category: string;
     level: string;
+    sectionId?: string | { _id: string; name: string };
+    categoryId?: string | { _id: string; name: string; sectionId?: string | { _id: string; name: string } };
   };
   duration: number;
   totalScore: number;
@@ -22,40 +24,49 @@ interface Exam {
   createdAt: string;
 }
 
+interface Section {
+  _id: string;
+  name: string;
+  description: string;
+  order: number;
+}
+
 export default function MockExamPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [filteredExams, setFilteredExams] = useState<Exam[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-
-  const categories = [
-    'คณิตศาสตร์',
-    'ภาษาอังกฤษ',
-    'ฟิสิกส์',
-    'เคมี',
-    'ชีววิทยา',
-    'สังคมศึกษา',
-    'ภาษาไทย',
-  ];
+  const [selectedSection, setSelectedSection] = useState('');
 
   useEffect(() => {
-    const fetchExams = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/exams');
-        const data = await response.json();
+        const [examsRes, sectionsRes] = await Promise.all([
+          fetch('/api/exams'),
+          fetch('/api/sections'),
+        ]);
+
+        const [examsData, sectionsData] = await Promise.all([
+          examsRes.json(),
+          sectionsRes.json(),
+        ]);
+
+        const sortedSections = sectionsData.sort((a: Section, b: Section) => a.order - b.order);
+        setSections(sortedSections);
+
         // กรองเฉพาะข้อสอบที่ active
-        const activeExams = data.filter((exam: Exam) => exam.isActive);
+        const activeExams = examsData.filter((exam: Exam) => exam.isActive);
         setExams(activeExams);
         setFilteredExams(activeExams);
       } catch (error) {
-        console.error('Error fetching exams:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchExams();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -70,16 +81,36 @@ export default function MockExamPage() {
       );
     }
 
-    if (selectedCategory) {
-      filtered = filtered.filter((exam) => exam.courseId?.category === selectedCategory);
+    if (selectedSection) {
+      filtered = filtered.filter((exam) => {
+        const courseSectionId = typeof exam.courseId?.sectionId === 'string' 
+          ? exam.courseId.sectionId 
+          : exam.courseId?.sectionId?._id;
+        const categorySectionId = typeof exam.courseId?.categoryId === 'object' && exam.courseId.categoryId
+          ? (typeof exam.courseId.categoryId.sectionId === 'string'
+              ? exam.courseId.categoryId.sectionId
+              : exam.courseId.categoryId.sectionId?._id)
+          : null;
+        return courseSectionId === selectedSection || categorySectionId === selectedSection;
+      });
     }
 
     setFilteredExams(filtered);
-  }, [exams, searchTerm, selectedCategory]);
+  }, [exams, searchTerm, selectedSection]);
 
-  // นับจำนวนข้อสอบในแต่ละวิชา
-  const getCategoryCount = (category: string) => {
-    return exams.filter((exam) => exam.courseId?.category === category).length;
+  // นับจำนวนข้อสอบในแต่ละ section
+  const getSectionCount = (sectionId: string) => {
+    return exams.filter((exam) => {
+      const courseSectionId = typeof exam.courseId?.sectionId === 'string' 
+        ? exam.courseId.sectionId 
+        : exam.courseId?.sectionId?._id;
+      const categorySectionId = typeof exam.courseId?.categoryId === 'object' && exam.courseId.categoryId
+        ? (typeof exam.courseId.categoryId.sectionId === 'string'
+            ? exam.courseId.categoryId.sectionId
+            : exam.courseId.categoryId.sectionId?._id)
+        : null;
+      return courseSectionId === sectionId || categorySectionId === sectionId;
+    }).length;
   };
 
   // Category icons และ colors
@@ -165,39 +196,36 @@ export default function MockExamPage() {
             <div className="lg:w-56 flex-shrink-0">
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 sticky top-6">
                 <div className="space-y-3">
-                  {/* Category Filter */}
+                  {/* Section Filter */}
                   <section>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      วิชา
+                      หมวดหมู่
                     </label>
                     <div className="space-y-1">
                       <button
-                        onClick={() => setSelectedCategory('')}
+                        onClick={() => setSelectedSection('')}
                         className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
-                          selectedCategory === ''
+                          selectedSection === ''
                             ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
                             : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-200'
                         }`}
                       >
-                        <span className="flex items-center justify-between">
-                          <span className="flex items-center gap-1.5">
-                            {selectedCategory === '' && (
-                              <span className="w-1 h-1 bg-white rounded-full"></span>
-                            )}
-                            ทุกหมวดหมู่
-                          </span>
-                          <span className="font-bold text-xs">{exams.length}</span>
+                        <span className="flex items-center gap-1.5">
+                          {selectedSection === '' && (
+                            <span className="w-1 h-1 bg-white rounded-full"></span>
+                          )}
+                          ทุกหมวดหมู่
                         </span>
                       </button>
-                      {categories.map((category) => {
-                        const count = getCategoryCount(category);
+                      {sections.map((section) => {
+                        const count = getSectionCount(section._id);
                         const hasExams = count > 0;
-                        const isSelected = selectedCategory === category;
+                        const isSelected = selectedSection === section._id;
                         
                         return (
                           <button
-                            key={category}
-                            onClick={() => setSelectedCategory(category)}
+                            key={section._id}
+                            onClick={() => setSelectedSection(section._id)}
                             className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all duration-200 font-medium ${
                               isSelected
                                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30 transform scale-[1.02]'
@@ -207,14 +235,11 @@ export default function MockExamPage() {
                             }`}
                             disabled={!hasExams}
                           >
-                            <span className="flex items-center justify-between">
-                              <span className="flex items-center gap-1.5">
-                                {isSelected && (
-                                  <span className="w-1 h-1 bg-white rounded-full"></span>
-                                )}
-                                {category}
-                              </span>
-                              <span className="font-bold text-xs">{count}</span>
+                            <span className="flex items-center gap-1.5">
+                              {isSelected && (
+                                <span className="w-1 h-1 bg-white rounded-full"></span>
+                              )}
+                              {section.name}
                             </span>
                           </button>
                         );
@@ -223,11 +248,11 @@ export default function MockExamPage() {
                   </section>
 
                   {/* Clear Filters */}
-                  {(searchTerm || selectedCategory) && (
+                  {(searchTerm || selectedSection) && (
                     <button
                       onClick={() => {
                         setSearchTerm('');
-                        setSelectedCategory('');
+                        setSelectedSection('');
                       }}
                       className="w-full px-2.5 py-1.5 text-xs bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                     >
@@ -351,7 +376,7 @@ export default function MockExamPage() {
               <button
                 onClick={() => {
                   setSearchTerm('');
-                  setSelectedCategory('');
+                  setSelectedSection('');
                 }}
                 className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
               >
