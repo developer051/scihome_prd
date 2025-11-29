@@ -17,7 +17,7 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
-  sectionId?: string;
+  sectionId?: string | { _id: string };
   categoryId?: string;
 }
 
@@ -57,7 +57,9 @@ export default function CoursesPage() {
         // Map courses to include sectionName
         const coursesWithSectionName = coursesData.map((course: Course) => {
           const section = sortedSections.find((s: Section) => {
-            const courseSectionId = typeof course.sectionId === 'string' ? course.sectionId : course.sectionId?._id;
+            const courseSectionId = typeof course.sectionId === 'string' 
+              ? course.sectionId 
+              : (course.sectionId && typeof course.sectionId === 'object' ? course.sectionId._id : undefined);
             return s._id === courseSectionId;
           });
           return {

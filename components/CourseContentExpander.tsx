@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FaChevronDown, FaChevronUp, FaPlus, FaEdit, FaTrash, FaChevronRight, FaYoutube } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaPlus, FaEdit, FaTrash, FaChevronRight, FaYoutube, FaBookOpen } from 'react-icons/fa';
 import { ILesson, ISubLesson } from '@/models/Course';
 
 interface CourseContentExpanderProps {

@@ -31,6 +31,8 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
+  sectionId?: string | { _id: string };
+  categoryId?: string;
 }
 
 interface News {
@@ -195,7 +197,10 @@ export default function HomePage() {
           });
           
           const sectionCoursesList = coursesData.filter((course: Course) => {
-            if (course.sectionId === section._id) return true;
+            const courseSectionId = typeof course.sectionId === 'string' 
+              ? course.sectionId 
+              : (course.sectionId && typeof course.sectionId === 'object' ? course.sectionId._id : undefined);
+            if (courseSectionId === section._id) return true;
             return sectionCats.some((cat: Category) => cat._id === course.categoryId);
           });
           

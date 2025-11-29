@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContactFloatingButton from '@/components/ContactFloatingButton';
+import ContactStickySidebar from '@/components/ContactStickySidebar';
 
 const prompt = Prompt({ 
   subsets: ['latin', 'thai'],
@@ -11,8 +12,13 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: 'SciHome - สถาบันกวดวิชาคุณภาพ',
+  title: 'สถาบันกวดวิชา ScienceHome',
   description: 'สถาบันกวดวิชาที่มุ่งมั่นในการพัฒนาการศึกษาและสร้างอนาคตที่ดีให้กับนักเรียนทุกคน',
+  icons: {
+    icon: '/scihome.png',
+    shortcut: '/scihome.png',
+    apple: '/scihome.png',
+  },
 };
 
 export default function RootLayout({
@@ -43,6 +49,7 @@ export default function RootLayout({
           <Footer />
           <ContactFloatingButton />
         </div>
+        <ContactStickySidebar />
       </body>
     </html>
   );

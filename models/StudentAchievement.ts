@@ -44,3 +44,4 @@ const StudentAchievementSchema = new Schema<IStudentAchievement>({
 export default mongoose.models.StudentAchievement || mongoose.model<IStudentAchievement>('StudentAchievement', StudentAchievementSchema);
 
 
+
