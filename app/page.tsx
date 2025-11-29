@@ -16,7 +16,6 @@ import {
 } from 'react-icons/fa';
 import CourseCard from '@/components/CourseCard';
 import CourseSolutionCard from '@/components/CourseSolutionCard';
-import TestimonialCard from '@/components/TestimonialCard';
 import StudentAchievementCarousel from '@/components/StudentAchievementCarousel';
 
 interface Course {
@@ -32,15 +31,6 @@ interface Course {
   maxStudents: number;
   isOnline: boolean;
   isOnsite: boolean;
-}
-
-interface Testimonial {
-  _id: string;
-  studentName: string;
-  message: string;
-  image: string;
-  course: string;
-  rating: number;
 }
 
 interface News {
@@ -78,7 +68,6 @@ export default function HomePage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [allNews, setAllNews] = useState<News[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -94,18 +83,16 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesRes, testimonialsRes, newsRes, sectionsRes, categoriesRes, achievementsRes] = await Promise.all([
+        const [coursesRes, newsRes, sectionsRes, categoriesRes, achievementsRes] = await Promise.all([
           fetch('/api/courses'),
-          fetch('/api/testimonials'),
           fetch('/api/news'),
           fetch('/api/sections'),
           fetch('/api/categories'),
           fetch('/api/student-achievements'),
         ]);
 
-        const [coursesData, testimonialsData, newsData, sectionsData, categoriesData, achievementsData] = await Promise.all([
+        const [coursesData, newsData, sectionsData, categoriesData, achievementsData] = await Promise.all([
           coursesRes.json(),
-          testimonialsRes.json(),
           newsRes.json(),
           sectionsRes.json(),
           categoriesRes.json(),
@@ -114,7 +101,6 @@ export default function HomePage() {
 
         setAllCourses(coursesData);
         setCourses(coursesData.slice(0, 4));
-        setTestimonials(testimonialsData.slice(0, 3));
         setAllNews(newsData);
         setNews(newsData.slice(0, 6));
         setSections(sectionsData);
@@ -434,38 +420,10 @@ export default function HomePage() {
         <StudentAchievementCarousel achievements={achievements} />
       )}
 
-      {/* Testimonials Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              รีวิวจากนักเรียน
-            </h2>
-            <p className="text-gray-600">
-              ความประทับใจจากนักเรียนที่เรียนกับเรา
-            </p>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, index) => (
-                <div key={index} className="bg-gray-200 animate-pulse rounded-lg h-48"></div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {testimonials.map((testimonial) => (
-                <TestimonialCard key={testimonial._id} testimonial={testimonial} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* News Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="pt-4 pb-16 bg-gray-50">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-right mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               ข่าวสารและกิจกรรม
             </h2>

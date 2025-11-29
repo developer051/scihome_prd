@@ -25,13 +25,13 @@ export default function StudentAchievementCarousel({ achievements }: StudentAchi
   }
 
   return (
-    <div className="relative py-16 bg-gradient-to-b from-white via-gray-50/30 to-white">
+    <div className="relative pt-8 pb-16 bg-gradient-to-b from-white via-gray-50/30 to-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            ความสำเร็จของนักเรียน
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 text-right">
+            เด็กเก่งบ้านนักวิทย์
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-right">
             ผลงานและความสำเร็จของนักเรียนที่เรียนกับเรา
           </p>
         </div>
@@ -39,7 +39,7 @@ export default function StudentAchievementCarousel({ achievements }: StudentAchi
         <div className="relative">
           <Swiper
             modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={30}
+            spaceBetween={10}
             slidesPerView={1}
             breakpoints={{
               640: {
@@ -70,11 +70,11 @@ export default function StudentAchievementCarousel({ achievements }: StudentAchi
             {achievements.map((achievement) => (
               <SwiperSlide key={achievement._id}>
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 h-full flex flex-col">
-                  <div className="relative w-full h-64 bg-gray-100 overflow-hidden">
+                  <div className="relative w-full h-64 bg-gray-100 overflow-hidden flex items-center justify-center">
                     <img
                       src={achievement.image}
                       alt={achievement.title}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                      className="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
