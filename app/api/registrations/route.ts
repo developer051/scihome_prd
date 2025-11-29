@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     console.log('Received registration data:', { ...body, password: '***' });
     
     // Validate required fields
-    const { name, phone, email, username, password, dateOfBirth, gradeLevel, school, photo, course, courseId, message, role } = body;
+    const { name, nickname, phone, email, username, password, dateOfBirth, gradeLevel, school, photo, course, courseId, message, role } = body;
     
     if (!name || !phone || !email || !username || !password || !dateOfBirth || !gradeLevel || !school || !course) {
       console.error('Missing required fields:', { name, phone, email, username, password: !!password, dateOfBirth, gradeLevel, school, course });
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role: normalizedRole,
       dateOfBirth: new Date(dateOfBirth),
+      nickname: nickname || '', // เพิ่ม nickname ถ้ามี
       courseId: courseId || '', // เพิ่ม courseId ถ้ามี
       message: message || '', // รับ message ถ้ามี
       photo: (photo && photo.trim() !== '') ? photo.trim() : '', // ตรวจสอบให้แน่ใจว่า photo เป็น string และไม่ใช่ whitespace เท่านั้น

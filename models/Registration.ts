@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IRegistration extends Document {
   name: string;
+  nickname?: string;
   phone: string;
   email: string;
   username: string;
@@ -26,6 +27,12 @@ const RegistrationSchema = new Schema<IRegistration>({
     required: [true, 'Student name is required'],
     trim: true,
     maxlength: [100, 'Name must not exceed 100 characters'],
+  },
+  nickname: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Nickname must not exceed 50 characters'],
+    default: '',
   },
   phone: {
     type: String,

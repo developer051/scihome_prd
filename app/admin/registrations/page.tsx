@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable';
 interface Registration {
   _id: string;
   name: string;
+  nickname?: string;
   phone: string;
   email: string;
   username: string;
@@ -60,6 +61,11 @@ export default function AdminRegistrationsPage() {
     {
       key: 'name',
       label: 'ชื่อ-นามสกุล',
+    },
+    {
+      key: 'nickname',
+      label: 'ชื่อเล่น',
+      render: (value: string) => value || <span className="text-gray-400">-</span>,
     },
     {
       key: 'phone',
@@ -251,6 +257,7 @@ function RegistrationEditForm({ registration, courses, onSubmit, onClose }: {
 }) {
   const [formData, setFormData] = useState({
     name: registration.name || '',
+    nickname: registration.nickname || '',
     phone: registration.phone || '',
     email: registration.email || '',
     username: registration.username || '',
@@ -389,6 +396,21 @@ function RegistrationEditForm({ registration, courses, onSubmit, onClose }: {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ชื่อเล่น
+              </label>
+              <input
+                type="text"
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 เบอร์โทรศัพท์ *
