@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa';
+import { useState } from 'react';
 
 interface CourseSolutionCardProps {
   course: {
@@ -12,26 +14,45 @@ interface CourseSolutionCardProps {
   };
 }
 
+// Helper function to get image URL
+function getImageUrl(image: string | undefined | null): string {
+  if (!image) {
+    return '/images/course-default.jpg';
+  }
+  
+  // ถ้าเป็น full URL หรือ relative path ที่เริ่มด้วย / ให้ใช้ตามเดิม
+  if (image.startsWith('http://') || image.startsWith('https://') || image.startsWith('/')) {
+    return image;
+  }
+  
+  // ถ้าเป็น image ID ให้ใช้ API endpoint
+  return `/api/images/${image}`;
+}
+
 export default function CourseSolutionCard({ course }: CourseSolutionCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const imageUrl = imageError ? '/images/course-default.jpg' : getImageUrl(course.image);
+
   return (
     <Link href={`/courses/${course._id}`} className="group">
       <div className="bg-white rounded-lg cursor-pointer flex flex-col h-full border border-gray-100 overflow-hidden course-solution-card-glow">
         {/* Course Image */}
-        {course.image && (
-          <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
-            <img
-              src={course.image}
-              alt={course.name}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-            />
-            {/* Category Badge */}
-            <div className="absolute top-4 left-4">
-              <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                {course.category}
-              </span>
-            </div>
+        <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
+          <Image
+            src={imageUrl}
+            alt={course.name}
+            fill
+            className="object-cover transition-transform duration-300 hover:scale-110"
+            onError={() => setImageError(true)}
+            unoptimized={imageUrl.startsWith('/api/images/')}
+          />
+          {/* Category Badge */}
+          <div className="absolute top-4 left-4 z-10">
+            <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              {course.category}
+            </span>
           </div>
-        )}
+        </div>
 
         {/* Content */}
         <div className="p-6 flex flex-col flex-grow">
