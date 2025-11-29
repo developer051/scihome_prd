@@ -25,12 +25,25 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+interface NotificationCounts {
+  registrations: number;
+  enrollments: number;
+  messages: number;
+  total: number;
+}
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationCounts>({
+    registrations: 0,
+    enrollments: 0,
+    messages: 0,
+    total: 0,
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -62,20 +75,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     checkAccess();
   }, [router]);
 
+  // ดึงข้อมูล notifications
+  useEffect(() => {
+    if (!isAuthorized) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch('/api/admin/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    // ดึงข้อมูลทันทีเมื่อ authorized และเมื่อเปลี่ยนหน้า
+    fetchNotifications();
+    
+    // อัปเดตทุก 30 วินาที
+    const interval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAuthorized, pathname]);
+
   const menuItems = [
-    { name: 'Dashboard', href: '/admin', icon: FaTachometerAlt },
-    { name: 'Section', href: '/admin/sections', icon: FaFolder },
-    { name: 'Category', href: '/admin/categories', icon: FaTags },
-    { name: 'หลักสูตร', href: '/admin/courses', icon: FaGraduationCap },
-    { name: 'ข้อสอบ', href: '/admin/exams', icon: FaFileAlt },
-    { name: 'ครูผู้สอน', href: '/admin/teachers', icon: FaChalkboardTeacher },
-    { name: 'ข่าวสาร', href: '/admin/news', icon: FaNewspaper },
-    { name: 'รีวิว', href: '/admin/testimonials', icon: FaComments },
-    { name: 'ความสำเร็จนักเรียน', href: '/admin/student-achievements', icon: FaTrophy },
-    { name: 'การสมัครเรียน', href: '/admin/registrations', icon: FaUserPlus },
-    { name: 'การลงทะเบียนคอร์ส', href: '/admin/enrollments', icon: FaClipboardList },
-    { name: 'ผู้ใช้', href: '/admin/users', icon: FaUsers },
-    { name: 'ข้อความติดต่อ', href: '/admin/messages', icon: FaEnvelope },
+    { name: 'Dashboard', href: '/admin', icon: FaTachometerAlt, notificationKey: null },
+    { name: 'Section', href: '/admin/sections', icon: FaFolder, notificationKey: null },
+    { name: 'Category', href: '/admin/categories', icon: FaTags, notificationKey: null },
+    { name: 'หลักสูตร', href: '/admin/courses', icon: FaGraduationCap, notificationKey: null },
+    { name: 'ข้อสอบ', href: '/admin/exams', icon: FaFileAlt, notificationKey: null },
+    { name: 'ครูผู้สอน', href: '/admin/teachers', icon: FaChalkboardTeacher, notificationKey: null },
+    { name: 'ข่าวสาร', href: '/admin/news', icon: FaNewspaper, notificationKey: null },
+    { name: 'รีวิว', href: '/admin/testimonials', icon: FaComments, notificationKey: null },
+    { name: 'ความสำเร็จนักเรียน', href: '/admin/student-achievements', icon: FaTrophy, notificationKey: null },
+    { name: 'การสมัครเรียน', href: '/admin/registrations', icon: FaUserPlus, notificationKey: 'registrations' },
+    { name: 'การลงทะเบียนคอร์ส', href: '/admin/enrollments', icon: FaClipboardList, notificationKey: 'enrollments' },
+    { name: 'ผู้ใช้', href: '/admin/users', icon: FaUsers, notificationKey: null },
+    { name: 'ข้อความติดต่อ', href: '/admin/messages', icon: FaEnvelope, notificationKey: 'messages' },
   ];
 
   if (!authChecked) {
@@ -126,19 +164,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               ? pathname === item.href || pathname.startsWith('/admin/users/')
               : pathname === item.href;
             
+            const notificationCount = item.notificationKey 
+              ? notifications[item.notificationKey as keyof NotificationCounts] || 0
+              : 0;
+            
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
                 onClick={() => setIsSidebarOpen(false)}
               >
-                <Icon className="mr-3" size={16} />
-                {item.name}
+                <div className="flex items-center">
+                  <Icon className="mr-3" size={16} />
+                  {item.name}
+                </div>
+                {notificationCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 flex items-center justify-center min-w-[20px] h-5">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
               </Link>
             );
           })}
