@@ -17,6 +17,7 @@ import {
 import CourseCard from '@/components/CourseCard';
 import CourseSolutionCard from '@/components/CourseSolutionCard';
 import TestimonialCard from '@/components/TestimonialCard';
+import StudentAchievementCarousel from '@/components/StudentAchievementCarousel';
 
 interface Course {
   _id: string;
@@ -63,6 +64,16 @@ interface Category {
   sectionId: string | Section;
 }
 
+interface StudentAchievement {
+  _id: string;
+  image: string;
+  title: string;
+  description: string;
+  studentName?: string;
+  isActive: boolean;
+  order: number;
+}
+
 export default function HomePage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
@@ -73,6 +84,7 @@ export default function HomePage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sectionCourses, setSectionCourses] = useState<Record<string, Course[]>>({});
+  const [achievements, setAchievements] = useState<StudentAchievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -82,20 +94,22 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesRes, testimonialsRes, newsRes, sectionsRes, categoriesRes] = await Promise.all([
+        const [coursesRes, testimonialsRes, newsRes, sectionsRes, categoriesRes, achievementsRes] = await Promise.all([
           fetch('/api/courses'),
           fetch('/api/testimonials'),
           fetch('/api/news'),
           fetch('/api/sections'),
           fetch('/api/categories'),
+          fetch('/api/student-achievements'),
         ]);
 
-        const [coursesData, testimonialsData, newsData, sectionsData, categoriesData] = await Promise.all([
+        const [coursesData, testimonialsData, newsData, sectionsData, categoriesData, achievementsData] = await Promise.all([
           coursesRes.json(),
           testimonialsRes.json(),
           newsRes.json(),
           sectionsRes.json(),
           categoriesRes.json(),
+          achievementsRes.json(),
         ]);
 
         setAllCourses(coursesData);
@@ -105,6 +119,7 @@ export default function HomePage() {
         setNews(newsData.slice(0, 6));
         setSections(sectionsData);
         setCategories(categoriesData);
+        setAchievements(achievementsData);
 
         // Get courses for sections 1, 2, 3
         const targetSections = sectionsData.filter((s: Section) => s.order <= 3);
@@ -413,6 +428,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Student Achievements Carousel Section */}
+      {achievements.length > 0 && (
+        <StudentAchievementCarousel achievements={achievements} />
+      )}
 
       {/* Testimonials Section */}
       <section className="py-16 bg-white">

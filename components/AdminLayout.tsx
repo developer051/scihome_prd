@@ -16,7 +16,8 @@ import {
   FaClipboardList,
   FaUsers,
   FaFolder,
-  FaTags
+  FaTags,
+  FaTrophy
 } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 
@@ -70,6 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'ครูผู้สอน', href: '/admin/teachers', icon: FaChalkboardTeacher },
     { name: 'ข่าวสาร', href: '/admin/news', icon: FaNewspaper },
     { name: 'รีวิว', href: '/admin/testimonials', icon: FaComments },
+    { name: 'ความสำเร็จนักเรียน', href: '/admin/student-achievements', icon: FaTrophy },
     { name: 'การสมัครเรียน', href: '/admin/registrations', icon: FaUserPlus },
     { name: 'การลงทะเบียนคอร์ส', href: '/admin/enrollments', icon: FaClipboardList },
     { name: 'ผู้ใช้', href: '/admin/users', icon: FaUsers },
