@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "bash scripts/auto-backup.sh",
     "dev": "next dev -p 3007",
     "dev:safe": "node scripts/kill-port-3007.js && next dev -p 3007",
     "kill-port": "node scripts/kill-port-3007.js",
     "build": "next build",
+    "prestart": "bash scripts/auto-backup.sh",
     "start": "next start -p 3007",
     "lint": "next lint",
     "test": "jest",
@@ -15,6 +17,9 @@
     "backup:full": "node scripts/backup-full.js",
     "backup:db": "node scripts/backup.js",
     "backup:database": "bash scripts/backup-database.sh",
+    "backup:auto": "bash scripts/auto-backup.sh",
+    "cron:setup": "bash scripts/setup-cron-backup.sh",
+    "cron:remove": "bash scripts/remove-cron-backup.sh",
     "restore": "node scripts/restore.js"
   },
   "dependencies": {
