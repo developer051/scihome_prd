@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { 
   FaArrowRight, 
@@ -79,6 +79,83 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [displayCount, setDisplayCount] = useState(8);
   const [newsDisplayCount, setNewsDisplayCount] = useState(6);
+  
+  // Typewriter effect states
+  const [displayedText1, setDisplayedText1] = useState('');
+  const [displayedText2, setDisplayedText2] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+  
+  const text1 = 'ปั้นเกรด A';
+  const text2 = 'เตรียมสอบติด';
+  
+  // Ref to store timeout IDs and state for cleanup
+  const typewriterStateRef = useRef({
+    currentIndex1: 0,
+    currentIndex2: 0,
+    timeoutId1: null as NodeJS.Timeout | null,
+    timeoutId2: null as NodeJS.Timeout | null,
+  });
+
+  // Typewriter effect for hero text with loop (no deletion, only forward typing)
+  useEffect(() => {
+    const state = typewriterStateRef.current;
+    
+    const clearTimeouts = () => {
+      if (state.timeoutId1) {
+        clearTimeout(state.timeoutId1);
+        state.timeoutId1 = null;
+      }
+      if (state.timeoutId2) {
+        clearTimeout(state.timeoutId2);
+        state.timeoutId2 = null;
+      }
+    };
+    
+    const typeText1 = () => {
+      if (state.currentIndex1 < text1.length) {
+        // Typing text1
+        setDisplayedText1(text1.slice(0, state.currentIndex1 + 1));
+        state.currentIndex1++;
+        state.timeoutId1 = setTimeout(typeText1, 100); // 100ms per character
+      } else {
+        // Finished typing text1, start typing text2
+        setTimeout(() => {
+          const typeText2 = () => {
+            if (state.currentIndex2 < text2.length) {
+              setDisplayedText2(text2.slice(0, state.currentIndex2 + 1));
+              state.currentIndex2++;
+              state.timeoutId2 = setTimeout(typeText2, 100); // 100ms per character
+            } else {
+              // Finished typing both texts, wait then restart
+              setIsTyping(false);
+              setTimeout(() => {
+                // Reset and restart typing
+                state.currentIndex1 = 0;
+                state.currentIndex2 = 0;
+                setDisplayedText1('');
+                setDisplayedText2('');
+                setIsTyping(true);
+                setTimeout(() => {
+                  typeText1();
+                }, 500); // Wait before restarting
+              }, 2000); // Wait 2 seconds before restarting
+            }
+          };
+          typeText2();
+        }, 300);
+      }
+    };
+    
+    // Start typing after component mounts
+    const startDelay = setTimeout(() => {
+      typeText1();
+    }, 500);
+    
+    return () => {
+      clearTimeout(startDelay);
+      clearTimeouts();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -207,11 +284,21 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left side - Content */}
             <div>
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up">
-                ปั้นเกรด A
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                <span className="inline-block">
+                  {displayedText1}
+                  {displayedText1 !== text1 && <span className="animate-pulse">|</span>}
+                </span>
                 <br />
-                <span className="text-blue-600 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent animate-fade-in-up animation-delay-200">
-                  เตรียมสอบติด
+                <span className="text-blue-600 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent inline-block min-h-[1.2em]">
+                  {displayedText1 === text1 ? (
+                    <>
+                      {displayedText2}
+                      {isTyping && <span className="animate-pulse">|</span>}
+                    </>
+                  ) : (
+                    <span className="invisible">{text2}</span>
+                  )}
                 </span>
               </h1>
               

@@ -39,7 +39,7 @@ export default function StudentAchievementCarousel({ achievements }: StudentAchi
         <div className="relative">
           <Swiper
             modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={10}
+            spaceBetween={30}
             slidesPerView={1}
             breakpoints={{
               640: {
@@ -61,7 +61,7 @@ export default function StudentAchievementCarousel({ achievements }: StudentAchi
               dynamicBullets: true,
             }}
             autoplay={{
-              delay: 5000,
+              delay: 3000,
               disableOnInteraction: false,
             }}
             loop={achievements.length > 3}

@@ -35,6 +35,8 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
+  const [typewriterText, setTypewriterText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +96,54 @@ export default function CoursesPage() {
     setFilteredCourses(filtered);
   }, [courses, searchTerm, selectedSection]);
 
+  // Typewriter effect for placeholder
+  useEffect(() => {
+    const fullText = 'ค้นหาหลักสูตร...';
+    let currentIndex = 0;
+    let isDeleting = false;
+    let typingSpeed = 100;
+    let timeoutId: NodeJS.Timeout;
+
+    const typeWriter = () => {
+      if (!isDeleting && currentIndex < fullText.length) {
+        setTypewriterText(fullText.substring(0, currentIndex + 1));
+        currentIndex++;
+        typingSpeed = 100;
+      } else if (isDeleting && currentIndex > 0) {
+        setTypewriterText(fullText.substring(0, currentIndex - 1));
+        currentIndex--;
+        typingSpeed = 50;
+      } else if (!isDeleting && currentIndex === fullText.length) {
+        // Wait before deleting
+        typingSpeed = 2000;
+        isDeleting = true;
+      } else if (isDeleting && currentIndex === 0) {
+        // Wait before typing again
+        typingSpeed = 500;
+        isDeleting = false;
+      }
+
+      timeoutId = setTimeout(typeWriter, typingSpeed);
+    };
+
+    typeWriter();
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
+  // Cursor blinking effect
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 530);
+
+    return () => clearInterval(cursorInterval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -111,20 +161,6 @@ export default function CoursesPage() {
           <div className="lg:w-56 flex-shrink-0">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 sticky top-6">
               <div className="space-y-3">
-                {/* Search */}
-                <div>
-                  <div className="relative group">
-                    <FaSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors text-xs" />
-                    <input
-                      type="text"
-                      placeholder="ค้นหาหลักสูตร..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-8 pr-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
-                    />
-                  </div>
-                </div>
-
                 {/* Section Filter */}
                 <section>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -166,6 +202,26 @@ export default function CoursesPage() {
                     ))}
                   </div>
                 </section>
+
+                {/* Search */}
+                <div>
+                  <div className="relative group">
+                    <FaSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors text-xs" />
+                    <input
+                      type="text"
+                      placeholder=""
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
+                    />
+                    {!searchTerm && (
+                      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
+                        {typewriterText}
+                        <span className={`inline-block w-0.5 h-3 bg-blue-500 ml-0.5 ${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity`}>|</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Clear Filters */}
                 {(searchTerm || selectedSection) && (
