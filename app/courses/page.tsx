@@ -165,9 +165,6 @@ export default function CoursesPage() {
               <div className="space-y-3">
                 {/* Section Filter */}
                 <section>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    หมวดหมู่
-                  </label>
                   <div className="space-y-1">
                     <button
                       onClick={() => setSelectedSection('')}

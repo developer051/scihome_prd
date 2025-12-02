@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState<string>('');
   const pathname = usePathname();
   const router = useRouter();
   const accountDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -20,6 +21,24 @@ export default function Navbar() {
     if (typeof window !== 'undefined') {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(loggedIn);
+      
+      // ดึงข้อมูลชื่อผู้ใช้จาก localStorage
+      if (loggedIn) {
+        try {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const user = JSON.parse(userData);
+            // ใช้ nickname ถ้ามี ถ้าไม่มีใช้ name
+            const displayName = user.nickname || user.name || 'My account';
+            setUserName(displayName);
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          setUserName('My account');
+        }
+      } else {
+        setUserName('My account');
+      }
     }
     
     // Cleanup timeout เมื่อ component unmount
@@ -165,7 +184,7 @@ export default function Navbar() {
                 onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
               >
                 <FaUserCircle className="text-base" />
-                <span>My account</span>
+                <span>{userName || 'My account'}</span>
                 <FaChevronDown className={`text-xs transition-all duration-300 ${isAccountDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -329,7 +348,7 @@ export default function Navbar() {
               >
                 <div className="flex items-center space-x-2">
                   <FaUserCircle className="text-xl" />
-                  <span>My account</span>
+                  <span>{userName || 'My account'}</span>
                 </div>
                 <FaChevronDown className={`text-xs transition-all duration-300 ${isAccountDropdownOpen ? 'rotate-180 text-indigo-600' : ''}`} />
               </button>

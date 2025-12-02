@@ -52,7 +52,7 @@ export default function TeachersPage() {
                 ครูผู้สอน
                 <br />
                 <span className="text-blue-600 bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent animate-fade-in-up animation-delay-200">
-                  คุณภาพสูง
+                  Our teachers
                 </span>
               </h1>
               

@@ -23,15 +23,12 @@ export default function TeacherCard({ teacher }: TeacherCardProps) {
           alt={teacher.name}
           className="w-full h-64 object-contain bg-gray-100 transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
-          <h3 className="text-xl font-semibold">{teacher.name}</h3>
-          <p className="text-sm opacity-90">{teacher.education}</p>
-        </div>
       </div>
 
       <div className="p-6">
         <div className="mb-4">
+          <h3 className="text-xl font-semibold text-gray-900 mb-1">{teacher.name}</h3>
+          <p className="text-sm text-gray-600 mb-3">{teacher.education}</p>
           <div className="flex items-center text-sm text-gray-600 mb-2">
             <FaChalkboardTeacher className="mr-2 text-blue-500" />
             <span>ประสบการณ์ {teacher.experience} ปี</span>
